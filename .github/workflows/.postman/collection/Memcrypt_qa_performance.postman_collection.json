@@ -1,0 +1,6127 @@
+{
+	"info": {
+		"_postman_id": "fc2bdd05-f3b0-4aa3-9a99-364e65ec8ad3",
+		"name": "Memcrypt_qa_performance",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "38607775",
+		"_collection_link": "https://cloudy-shuttle-102798.postman.co/workspace/Memcrypt~47539f18-1a06-47e3-955b-877ae9ecc9a2/collection/38607775-fc2bdd05-f3b0-4aa3-9a99-364e65ec8ad3?action=share&source=collection_link&creator=38607775"
+	},
+	"item": [
+		{
+			"name": "AdminFlow",
+			"item": [
+				{
+					"name": "TokenCall",
+					"item": [
+						{
+							"name": "Get Admin Access Token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"var jsonData = pm.response.json();\r",
+											"\r",
+											"var adminAccessToken=jsonData.access_token;\r",
+											"\r",
+											"pm.environment.set(\"admin_access_token\",adminAccessToken);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/x-www-form-urlencoded",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "client_id",
+											"value": "{{client_id}}",
+											"type": "text"
+										},
+										{
+											"key": "grant_type",
+											"value": "password",
+											"type": "text"
+										},
+										{
+											"key": "username",
+											"value": "{{admin_username}}",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "{{admin_password}}",
+											"type": "text"
+										},
+										{
+											"key": "scope ",
+											"value": "openid",
+											"type": "text",
+											"disabled": true
+										}
+									]
+								},
+								"url": {
+									"raw": "{{keycloak_url}}/realms/{{realm}}/protocol/openid-connect/token",
+									"host": [
+										"{{keycloak_url}}"
+									],
+									"path": [
+										"realms",
+										"{{realm}}",
+										"protocol",
+										"openid-connect",
+										"token"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Create User",
+					"item": [
+						{
+							"name": "New Request",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Function to generate a random string of specified length\r",
+											"function generateRandomString(length) {\r",
+											"    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';\r",
+											"    let result = '';\r",
+											"    for (let i = 0; i < length; i++) {\r",
+											"        result += chars.charAt(Math.floor(Math.random() * chars.length));\r",
+											"    }\r",
+											"    return result;\r",
+											"}\r",
+											" \r",
+											"function generateProfessionalSuffix(length) {\r",
+											"    const suffixes = ['Tech', 'Soft', 'Corp', 'Dyn', 'Sys'];\r",
+											"    return suffixes[Math.floor(Math.random() * suffixes.length)] +\r",
+											"           generateRandomString(length - suffixes[0].length);\r",
+											"}\r",
+											"// Function to generate a random first name\r",
+											"function generateRandomFirstName() {\r",
+											"    const names = ['Alice', 'Bob', 'Charlie', 'David', 'Eve'];\r",
+											"    return names[Math.floor(Math.random() * names.length)];\r",
+											"}\r",
+											" \r",
+											" \r",
+											"// Function to generate a random company name\r",
+											"function generateRandomCompanyName() {\r",
+											"    const companies = ['abc', 'def', 'xyz'];\r",
+											"    return companies[Math.floor(Math.random() * companies.length)];\r",
+											"}\r",
+											" \r",
+											"// Function to generate a GUID\r",
+											"function generateGuid() {\r",
+											"    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {\r",
+											"        const r = (Math.random() * 16) | 0,\r",
+											"            v = c === 'x' ? r : (r & 0x3) | 0x8;\r",
+											"        return v.toString(16);\r",
+											"    });\r",
+											"}\r",
+											" \r",
+											"// Function to remove commas and spaces from a string\r",
+											"function sanitizeString(str) {\r",
+											"    return str.replace(/[\\s,]/g, ''); // Remove spaces and commas\r",
+											"}\r",
+											" \r",
+											"let customOrgName = \"api-\" + generateProfessionalSuffix(6);;\r",
+											"console.log(customOrgName);\r",
+											" \r",
+											"// Sanitize the customOrgName to remove commas and spaces\r",
+											"customOrgName = sanitizeString(customOrgName);\r",
+											" \r",
+											"if (customOrgName.length > 55) {\r",
+											"    customOrgName = customOrgName.substring(0, 55);\r",
+											"}\r",
+											" \r",
+											"// Set the generated customOrgName into the Postman environment\r",
+											"pm.environment.set(\"customOrgName\", customOrgName);\r",
+											" \r",
+											"pm.environment.set(\"randomFirstName\", generateRandomFirstName());\r",
+											" \r",
+											"pm.environment.set(\"randomLastName\", generateRandomFirstName());\r",
+											"// Generate a custom email in a valid format, ensuring it’s <= 75 characters\r",
+											"let customEmail = \"api-\"+pm.environment.get(\"randomFirstName\").toLowerCase() +\r",
+											"                  \".\" +\r",
+											"                  generateRandomString(5).toLowerCase() +\r",
+											"                  \"@\" +\r",
+											"                  generateRandomCompanyName() +\r",
+											"                  \".com\";\r",
+											" \r",
+											"// Ensure email length does not exceed 75 characters\r",
+											"if (customEmail.length > 75) {\r",
+											"    customEmail = customEmail.substring(0, 75);\r",
+											"}\r",
+											" \r",
+											"// Generate custom username, limited to 75 characters\r",
+											"let customUsername =customEmail;\r",
+											" \r",
+											"// Set the generated values into Postman environment variables\r",
+											"pm.environment.set(\"customOrgName\", customOrgName);\r",
+											"pm.environment.set(\"customUsername\", customUsername);\r",
+											"pm.environment.set(\"customEmail\", customEmail);\r",
+											" \r",
+											"// Log the generated values to the console for verification\r",
+											"console.log(\"Custom Org Name (<= 55 chars, no commas or spaces):\", customOrgName);\r",
+											"console.log(\"Custom Username (<= 75 chars):\", customUsername);\r",
+											"console.log(\"Custom Email (<= 75 chars, includes 'com'):\", customEmail);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 201\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"// Check that the status code is 201\r",
+											"pm.test(\"Status code is 201\", function () {\r",
+											"  const statusCode = pm.response.code;\r",
+											"    pm.expect(statusCode).to.eql(201);\r",
+											"});\r",
+											"\r",
+											"// Check that the body includes the string \"pending\"\r",
+											"pm.test(\"Body matches string 'pending'\", function () {\r",
+											"  pm.expect(pm.response.text()).to.include(\"pending\");\r",
+											"});\r",
+											"\r",
+											"// Parse the response JSON\r",
+											"var jsonData = pm.response.json();\r",
+											"\r",
+											"// Extract the id and email from the response\r",
+											"var responsetenantId = jsonData.tenant.id;\r",
+											"var responseadminuserid = jsonData.adminUser.id;\r",
+											"var responseadminusername = jsonData.adminUser.username;\r",
+											"var responseadminemail = jsonData.adminUser.email;\r",
+											"var responseadminfirstname = jsonData.adminUser.firstName;\r",
+											"var responseadminlastname = jsonData.adminUser.lastName;\r",
+											"var responseadminattributesstatus = jsonData.adminUser.attributes.status;\r",
+											"var responseadminverificationtoken = jsonData.adminUser.attributes.verificationToken;\r",
+											"\r",
+											"// Set the id and email as environment variables\r",
+											"pm.environment.set(\"TenantId\", responsetenantId);\r",
+											"pm.environment.set(\"AdminUserId\", responseadminuserid);\r",
+											"pm.environment.set(\"user_username\", responseadminusername);\r",
+											"pm.environment.set(\"Existingusername\", responseadminusername);\r",
+											"pm.environment.set(\"Existingemail\", responseadminemail);\r",
+											"pm.environment.set(\"ExistingfirstName\", responseadminfirstname);\r",
+											"pm.environment.set(\"ExistinglastName\", responseadminlastname);\r",
+											"pm.environment.set(\"AttributesStatus\", responseadminattributesstatus);\r",
+											"pm.environment.set(\"Existingverificationcode\", responseadminverificationtoken);\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"orgName\": \"{{customOrgName}}\",\r\n    \"adminUser\": {\r\n        \"username\": \"{{customUsername}}\",\r\n        \"email\": \"{{customEmail}}\",\r\n        \"firstName\": \"{{randomFirstName}}\",\r\n        \"lastName\": \"{{randomLastName}}\",\r\n        \"password\": \"{{password}}\"\r\n    }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{App_url}}/api/auth/signup",
+									"host": [
+										"{{App_url}}"
+									],
+									"path": [
+										"api",
+										"auth",
+										"signup"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Fetch pending users",
+					"item": [
+						{
+							"name": "Fetch all users pending for approval",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"// Check that the status code is 200",
+											"pm.test(\"Status code is 200\", function () {",
+											"const statusCode = pm.response.code;",
+											"    pm.expect(statusCode).to.eql(200);});",
+											"",
+											"// Retrieve environment variables",
+											"const adminUserId = pm.environment.get(\"AdminUserId\");",
+											"",
+											"// Check that the body includes the string from the environment variable",
+											"pm.test(\"Body matches string\", function () {",
+											"    // Use the retrieved environment variable in the test",
+											"    pm.expect(pm.response.text()).to.include(adminUserId);",
+											"});",
+											"",
+											"pm.test(\"Body matches string 'pending'\", function () {",
+											"    // Use the retrieved environment variable in the test",
+											"    pm.expect(pm.response.text()).to.include(\"pending\");",
+											"});",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{App_url}}/api/users/pending",
+									"host": [
+										"{{App_url}}"
+									],
+									"path": [
+										"api",
+										"users",
+										"pending"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "Save Users",
+					"auth": {
+						"type": "bearer",
+						"bearer": [
+							{
+								"key": "token",
+								"value": "{{admin_access_token}}",
+								"type": "string"
+							}
+						]
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Approve Users",
+					"item": [
+						{
+							"name": "Approve Created User",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											" const statusCode = pm.response.code;",
+											"    pm.expect(statusCode).to.eql(200);});",
+											"",
+											"// Check that the body includes the string \"pending\"",
+											"pm.test(\"Body matches string 'User approved successfully'\", function () {",
+											"  pm.expect(pm.response.text()).to.include(\"User approved successfully\");",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{App_url}}/api/users/{{AdminUserId}}/approve",
+									"host": [
+										"{{App_url}}"
+									],
+									"path": [
+										"api",
+										"users",
+										"{{AdminUserId}}",
+										"approve"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "Save Users",
+					"auth": {
+						"type": "bearer",
+						"bearer": [
+							{
+								"key": "token",
+								"value": "{{admin_access_token}}",
+								"type": "string"
+							}
+						]
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "User Email Verification After Approval",
+					"item": [
+						{
+							"name": "Verify User Email After Approval",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Fetch customOrgName from environment",
+											"let customOrgName = pm.environment.get(\"customOrgName\");",
+											"",
+											"pm.test(\"Status code is 200\", function () {",
+											"   const statusCode = pm.response.code;",
+											"    pm.expect(statusCode).to.eql(200);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"console.log(\"Adding a delay of 3 seconds before sending the request...\");",
+											"",
+											"// Delay of 3 seconds (3000 milliseconds)",
+											"setTimeout(function() {",
+											"    console.log(\"Delay finished. Proceeding to send the request.\");",
+											"    // Any code you want to execute after the delay can go here",
+											"}, 2500);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{emailURL}}/api/Messages?searchTerms={{Existingemail}}&mailboxName=Default&sortIsDescending=true&page=1&pageSize=5",
+									"host": [
+										"{{emailURL}}"
+									],
+									"path": [
+										"api",
+										"Messages"
+									],
+									"query": [
+										{
+											"key": "searchTerms",
+											"value": "{{Existingemail}}"
+										},
+										{
+											"key": "mailboxName",
+											"value": "Default"
+										},
+										{
+											"key": "sortColumn",
+											"value": "receivedDate",
+											"disabled": true
+										},
+										{
+											"key": "sortIsDescending",
+											"value": "true"
+										},
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "pageSize",
+											"value": "5"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"auth": {
+						"type": "noauth"
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Fetch All Users",
+					"item": [
+						{
+							"name": "Fetch all users",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Check that the status code is 200",
+											"pm.test(\"Status code is 200\", function () {",
+											" const statusCode = pm.response.code;",
+											"    pm.expect(statusCode).to.eql(200);});",
+											"",
+											"// Retrieve environment variables",
+											"const adminUserId = pm.environment.get(\"AdminUserId\");",
+											"",
+											"// Check that the body includes the string from the environment variable",
+											"pm.test(\"Body matches string\", function () {",
+											"    // Use the retrieved environment variable in the test",
+											"    pm.expect(pm.response.text()).to.include(adminUserId);",
+											"});",
+											"",
+											"pm.test(\"Body matches string 'approved'\", function () {",
+											"    // Use the retrieved environment variable in the test",
+											"    pm.expect(pm.response.text()).to.include(\"approved\");",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{App_url}}/api/users",
+									"host": [
+										"{{App_url}}"
+									],
+									"path": [
+										"api",
+										"users"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "Save Users",
+					"auth": {
+						"type": "bearer",
+						"bearer": [
+							{
+								"key": "token",
+								"value": "{{admin_access_token}}",
+								"type": "string"
+							}
+						]
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Verify email",
+					"item": [
+						{
+							"name": "Verifying users email",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											" const statusCode = pm.response.code;",
+											"    pm.expect(statusCode).to.eql(200);});",
+											"",
+											"// Check that the body includes the string \"pending\"",
+											"pm.test(\"Body matches string 'Email verified successfully'\", function () {",
+											"  pm.expect(pm.response.text()).to.include(\"Email verified successfully\");",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"token\": \"{{Existingverificationcode}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{App_url}}/api/auth/verify-email",
+									"host": [
+										"{{App_url}}"
+									],
+									"path": [
+										"api",
+										"auth",
+										"verify-email"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "Save Users",
+					"auth": {
+						"type": "noauth"
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Delete User and Organization after approval",
+					"item": [
+						{
+							"name": "KeycloakAccessToken",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let jsonData = pm.response.json();\r",
+											"\r",
+											"if (jsonData.access_token) {\r",
+											"    pm.environment.set(\"keycloak_access_token\", jsonData.access_token);\r",
+											"    console.log(\"Access token:\", jsonData.access_token);\r",
+											"} else {\r",
+											"    console.log(\"Error retrieving access token:\", jsonData);\r",
+											"}\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/x-www-form-urlencoded",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "client_id",
+											"value": "{{keycloak_clientId}}",
+											"type": "text"
+										},
+										{
+											"key": "client_secret",
+											"value": "{{keycloak_secert}}",
+											"type": "text"
+										},
+										{
+											"key": "grant_type",
+											"value": "client_credentials",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{keycloak_url}}/realms/{{realm}}/protocol/openid-connect/token",
+									"host": [
+										"{{keycloak_url}}"
+									],
+									"path": [
+										"realms",
+										"{{realm}}",
+										"protocol",
+										"openid-connect",
+										"token"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "KeycloakAccessToken Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let jsonData = pm.response.json();\r",
+											"\r",
+											"if (jsonData.access_token) {\r",
+											"    pm.environment.set(\"keycloak_access_token\", jsonData.access_token);\r",
+											"    console.log(\"Access token:\", jsonData.access_token);\r",
+											"} else {\r",
+											"    console.log(\"Error retrieving access token:\", jsonData);\r",
+											"}\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/x-www-form-urlencoded",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "client_id",
+											"value": "{{keycloak_clientId}}",
+											"type": "text"
+										},
+										{
+											"key": "client_secret",
+											"value": "{{keycloak_secert}}",
+											"type": "text"
+										},
+										{
+											"key": "grant_type",
+											"value": "client_credentials",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{keycloak_url}}/realms/{{realm}}/protocol/openid-connect/token",
+									"host": [
+										"{{keycloak_url}}"
+									],
+									"path": [
+										"realms",
+										"{{realm}}",
+										"protocol",
+										"openid-connect",
+										"token"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete User After Approval",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 204\", function () {\r",
+											" const statusCode = pm.response.code;\r",
+											"    pm.expect(statusCode).to.eql(204)})"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{keycloak_access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{keycloak_url}}/admin/realms/{{realm}}/users/{{AdminUserId}}",
+									"host": [
+										"{{keycloak_url}}"
+									],
+									"path": [
+										"admin",
+										"realms",
+										"{{realm}}",
+										"users",
+										"{{AdminUserId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Org after Approval",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 204\", function () {\r",
+											" const statusCode = pm.response.code;\r",
+											"    pm.expect(statusCode).to.eql(204)})"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{keycloak_access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{keycloak_url}}/admin/realms/{{realm}}/organizations/{{TenantId}}",
+									"host": [
+										"{{keycloak_url}}"
+									],
+									"path": [
+										"admin",
+										"realms",
+										"{{realm}}",
+										"organizations",
+										"{{TenantId}}"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"auth": {
+						"type": "noauth"
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Agent Binary Copy",
+					"item": [
+						{
+							"name": "Fetch Agentbinaries",
+							"item": [
+								{
+									"name": "Fetch All Agentbinaries",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"  pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"var jsonData = pm.response.json();\r",
+													"\r",
+													"let fileNames= [];\r",
+													"for (let version in jsonData.versions) {\r",
+													"    if (jsonData.versions.hasOwnProperty(version)) {\r",
+													"        // Loop through each file in the version\r",
+													"        jsonData.versions[version].forEach(file => {\r",
+													"            // Push the filename into the array\r",
+													"            fileNames.push(file.filename);\r",
+													"        });\r",
+													"    }\r",
+													"}\r",
+													"pm.environment.set(\"fileNames\", JSON.stringify(fileNames));\r",
+													"\r",
+													"console.log(fileNames);\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{agentBinaryUrl}}/agentbinary/v1.0/",
+											"host": [
+												"{{agentBinaryUrl}}"
+											],
+											"path": [
+												"agentbinary",
+												"v1.0",
+												""
+											]
+										},
+										"description": "List all available agent binary versions and their files."
+									},
+									"response": []
+								}
+							],
+							"auth": {
+								"type": "bearer",
+								"bearer": [
+									{
+										"key": "token",
+										"value": "{{admin_access_token}}",
+										"type": "string"
+									}
+								]
+							},
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Download File",
+							"item": [
+								{
+									"name": "Downloading a .exe file",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"  pm.response.to.have.status(200);\r",
+													"})"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{agentBinaryUrl}}/agentbinary/v1.0/download/{{exefile}}",
+											"host": [
+												"{{agentBinaryUrl}}"
+											],
+											"path": [
+												"agentbinary",
+												"v1.0",
+												"download",
+												"{{exefile}}"
+											]
+										},
+										"description": "Download the specified agent binary file."
+									},
+									"response": []
+								}
+							]
+						}
+					],
+					"auth": {
+						"type": "bearer",
+						"bearer": [
+							{
+								"key": "token",
+								"value": "{{admin_access_token}}",
+								"type": "string"
+							}
+						]
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				}
+			],
+			"auth": {
+				"type": "oauth2",
+				"oauth2": [
+					{
+						"key": "scope",
+						"value": "openid email profile",
+						"type": "string"
+					},
+					{
+						"key": "clientId",
+						"value": "{{client_id}}",
+						"type": "string"
+					},
+					{
+						"key": "accessTokenUrl",
+						"value": "{{keycloak_url}}/realms/memcrypt-qa/protocol/openid-connect/token",
+						"type": "string"
+					},
+					{
+						"key": "authUrl",
+						"value": "{{keycloak_url}}/realms/memcrypt-qa/protocol/openid-connect/auth",
+						"type": "string"
+					},
+					{
+						"key": "redirect_uri",
+						"value": "https://oauth.pstmn.io/v1/callback",
+						"type": "string"
+					},
+					{
+						"key": "grant_type",
+						"value": "authorization_code_with_pkce",
+						"type": "string"
+					},
+					{
+						"key": "tokenName",
+						"value": "Admin token",
+						"type": "string"
+					},
+					{
+						"key": "addTokenTo",
+						"value": "header",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "User Flow",
+			"item": [
+				{
+					"name": "Console",
+					"item": [
+						{
+							"name": "Create and Approve User",
+							"item": [
+								{
+									"name": "Get Admin Access Token",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var jsonData = pm.response.json();\r",
+													"\r",
+													"var adminAccessToken=jsonData.access_token;\r",
+													"\r",
+													"pm.environment.set(\"admin_access_token\",adminAccessToken);"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/x-www-form-urlencoded",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "client_id",
+													"value": "{{client_id}}",
+													"type": "text"
+												},
+												{
+													"key": "grant_type",
+													"value": "password",
+													"type": "text"
+												},
+												{
+													"key": "username",
+													"value": "{{admin_username}}",
+													"type": "text"
+												},
+												{
+													"key": "password",
+													"value": "{{admin_password}}",
+													"type": "text"
+												},
+												{
+													"key": "scope ",
+													"value": "openid",
+													"type": "text",
+													"disabled": true
+												}
+											]
+										},
+										"url": {
+											"raw": "{{keycloak_url}}/realms/{{realm}}/protocol/openid-connect/token",
+											"host": [
+												"{{keycloak_url}}"
+											],
+											"path": [
+												"realms",
+												"{{realm}}",
+												"protocol",
+												"openid-connect",
+												"token"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create User with valid data in console flow",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Check that the status code is 201",
+													"pm.test(\"Status code is 201\", function () {",
+													" const statusCode = pm.response.code;",
+													"    pm.expect(statusCode).to.eql(201)});",
+													"",
+													"// Check that the body includes the string \"pending\"",
+													"pm.test(\"Body matches string 'pending'\", function () {",
+													"  pm.expect(pm.response.text()).to.include(\"pending\");",
+													"});",
+													"",
+													"// Parse the response JSON",
+													"var jsonData = pm.response.json();",
+													"",
+													"// Extract the id and email from the response",
+													"var responsetenantId = jsonData.tenant.id;",
+													"var responseadminuserid = jsonData.adminUser.id;",
+													"var responseadminusername = jsonData.adminUser.username;",
+													"var responseadminemail = jsonData.adminUser.email;",
+													"var responseadminfirstname = jsonData.adminUser.firstName;",
+													"var responseadminlastname = jsonData.adminUser.lastName;",
+													"var responseadminattributesstatus = jsonData.adminUser.attributes.status;",
+													"var responseadminverificationtoken = jsonData.adminUser.attributes.verificationToken;",
+													"",
+													"// Set the id and email as environment variables",
+													"pm.environment.set(\"TenantId\", responsetenantId);",
+													"pm.environment.set(\"AdminUserId\", responseadminuserid);",
+													"pm.environment.set(\"user_username\", responseadminusername);",
+													"pm.environment.set(\"Existingusername\", responseadminusername);",
+													"pm.environment.set(\"Existingemail\", responseadminemail);",
+													"pm.environment.set(\"ExistingfirstName\", responseadminfirstname);",
+													"pm.environment.set(\"ExistinglastName\", responseadminlastname);",
+													"pm.environment.set(\"AttributesStatus\", responseadminattributesstatus);",
+													"pm.environment.set(\"Existingverificationcode\", responseadminverificationtoken);",
+													"",
+													"pm.environment.set(\"user_refresh_token\", \"test\");",
+													"pm.environment.set(\"user_token_expiration\",0);",
+													"",
+													"",
+													"console.log(\"TenantId\",pm.environment.get(\"TenantId\"));",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"// Function to generate a random string of specified length",
+													"function generateRandomString(length) {",
+													"    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+													"    let result = '';",
+													"    for (let i = 0; i < length; i++) {",
+													"        result += chars.charAt(Math.floor(Math.random() * chars.length));",
+													"    }",
+													"    return result;",
+													"}",
+													"",
+													"// Function to generate a random first name",
+													"function generateRandomFirstName() {",
+													"    const names = ['Alice', 'Bob', 'Charlie', 'David', 'Eve'];",
+													"    return names[Math.floor(Math.random() * names.length)];",
+													"}",
+													"",
+													"",
+													"// Function to generate a random company name",
+													"function generateRandomCompanyName() {",
+													"    const companies = ['techcorp', 'innosoft', 'globaldyn', 'cybersol', 'nextgen'];",
+													"    return companies[Math.floor(Math.random() * companies.length)];",
+													"}",
+													"",
+													"// Function to generate a GUID",
+													"function generateGuid() {",
+													"    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {",
+													"        const r = (Math.random() * 16) | 0,",
+													"            v = c === 'x' ? r : (r & 0x3) | 0x8;",
+													"        return v.toString(16);",
+													"    });",
+													"}",
+													"",
+													"// Function to remove commas and spaces from a string",
+													"function sanitizeString(str) {",
+													"    return str.replace(/[\\s,]/g, ''); // Remove spaces and commas",
+													"}",
+													"",
+													"// Generate custom organization name, limited to 55 characters",
+													"let customOrgName =\"api-\"+ generateRandomString(3) + ",
+													"                    generateRandomCompanyName().substring(0, 10) + // Restrict to 10 characters",
+													"                    generateRandomString(8) + ",
+													"                    generateGuid().substring(0, 20) + // Restrict to 20 characters",
+													"                    generateRandomString(3);",
+													"",
+													"// Sanitize the customOrgName to remove commas and spaces",
+													"customOrgName = sanitizeString(customOrgName);",
+													"",
+													"if (customOrgName.length > 55) {",
+													"    customOrgName = customOrgName.substring(0, 55);",
+													"}",
+													"",
+													"// Set the generated customOrgName into the Postman environment",
+													"pm.environment.set(\"customOrgName\", customOrgName);",
+													"",
+													"pm.environment.set(\"randomFirstName\", generateRandomFirstName());",
+													"",
+													"pm.environment.set(\"randomLastName\", generateRandomFirstName());",
+													"// Generate a custom email in a valid format, ensuring it’s <= 75 characters",
+													"let customEmail = \"api-\"+pm.environment.get(\"randomFirstName\").toLowerCase() + ",
+													"                  \".\" + ",
+													"                  generateRandomString(5).toLowerCase() + ",
+													"                  \"@\" + ",
+													"                  generateRandomCompanyName() + ",
+													"                  \".com\";",
+													"",
+													"// Ensure email length does not exceed 75 characters",
+													"if (customEmail.length > 75) {",
+													"    customEmail = customEmail.substring(0, 75);",
+													"}",
+													"",
+													"// Generate custom username, limited to 75 characters",
+													"let customUsername =\"api-\"+ generateRandomString(5) + ",
+													"                     generateGuid().substring(0, 20) + // Restrict to 20 characters",
+													"                     generateRandomString(5) + ",
+													"                     generateRandomFirstName().substring(0, 10) + // Restrict to 10 characters",
+													"                     generateRandomString(3);",
+													"",
+													"if (customUsername.length > 75) { ",
+													"    customUsername = customUsername.substring(0, 75);",
+													"}",
+													"",
+													"// Set the generated values into Postman environment variables",
+													"pm.environment.set(\"customOrgName\", customOrgName);",
+													"pm.environment.set(\"customUsername\", customUsername);",
+													"pm.environment.set(\"customEmail\", customEmail);",
+													"",
+													"// Log the generated values to the console for verification",
+													"console.log(\"Custom Org Name (<= 55 chars, no commas or spaces):\", customOrgName);",
+													"console.log(\"Custom Username (<= 75 chars):\", customUsername);",
+													"console.log(\"Custom Email (<= 75 chars, includes 'com'):\", customEmail);",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"orgName\": \"{{customOrgName}}\",\n    \"adminUser\": {\n        \"username\": \"{{customUsername}}\",\n        \"email\": \"{{customEmail}}\",\n        \"firstName\": \"{{randomFirstName}}\",\n        \"lastName\": \"{{randomLastName}}\",\n        \"password\": \"{{password}}\"\n    }\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{App_url}}/api/auth/signup",
+											"host": [
+												"{{App_url}}"
+											],
+											"path": [
+												"api",
+												"auth",
+												"signup"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Verify User Email for Signup",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Fetch customOrgName from environment",
+													"let customOrgName = pm.environment.get(\"customOrgName\");",
+													"",
+													"pm.test(\"Status code is 200\", function () {",
+													" const statusCode = pm.response.code;",
+													"    pm.expect(statusCode).to.eql(200)});",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"console.log(\"Adding a delay of 3 seconds before sending the request...\");",
+													"",
+													"// Delay of 3 seconds (3000 milliseconds)",
+													"setTimeout(function() {",
+													"    console.log(\"Delay finished. Proceeding to send the request.\");",
+													"    // Any code you want to execute after the delay can go here",
+													"}, 1500);"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{emailURL}}/api/Messages?searchTerms={{Existingemail}}&mailboxName=Default&sortIsDescending=true&page=1&pageSize=5",
+											"host": [
+												"{{emailURL}}"
+											],
+											"path": [
+												"api",
+												"Messages"
+											],
+											"query": [
+												{
+													"key": "searchTerms",
+													"value": "{{Existingemail}}"
+												},
+												{
+													"key": "mailboxName",
+													"value": "Default"
+												},
+												{
+													"key": "sortColumn",
+													"value": "receivedDate",
+													"disabled": true
+												},
+												{
+													"key": "sortIsDescending",
+													"value": "true"
+												},
+												{
+													"key": "page",
+													"value": "1"
+												},
+												{
+													"key": "pageSize",
+													"value": "5"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Approve Created User in console flow",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													" const statusCode = pm.response.code;",
+													"    pm.expect(statusCode).to.eql(200)});",
+													"",
+													"// Check that the body includes the string \"pending\"",
+													"pm.test(\"Body matches string 'User approved successfully'\", function () {",
+													"  pm.expect(pm.response.text()).to.include(\"User approved successfully\");",
+													"});"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{App_url}}/api/users/{{AdminUserId}}/approve",
+											"host": [
+												"{{App_url}}"
+											],
+											"path": [
+												"api",
+												"users",
+												"{{AdminUserId}}",
+												"approve"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Get Access Token",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var jsonData = pm.response.json();\r",
+													"\r",
+													"var userAccessToken=jsonData.access_token;\r",
+													"\r",
+													"pm.environment.set(\"user_access_token\",userAccessToken);"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/x-www-form-urlencoded",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "client_id",
+													"value": "{{client_id}}",
+													"type": "text"
+												},
+												{
+													"key": "grant_type",
+													"value": "password",
+													"type": "text"
+												},
+												{
+													"key": "username",
+													"value": "{{user_username}}",
+													"type": "text"
+												},
+												{
+													"key": "password",
+													"value": "{{user_password}}",
+													"type": "text"
+												},
+												{
+													"key": "scope ",
+													"value": "openid",
+													"type": "text",
+													"disabled": true
+												}
+											]
+										},
+										"url": {
+											"raw": "{{keycloak_url}}/realms/{{realm}}/protocol/openid-connect/token",
+											"host": [
+												"{{keycloak_url}}"
+											],
+											"path": [
+												"realms",
+												"{{realm}}",
+												"protocol",
+												"openid-connect",
+												"token"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"auth": {
+								"type": "bearer",
+								"bearer": [
+									{
+										"key": "token",
+										"value": "{{admin_access_token}}",
+										"type": "string"
+									}
+								]
+							},
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Add Device",
+							"item": [
+								{
+									"name": "Create Device",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Define jsonData before using it in the test script",
+													"const jsonData = pm.response.json();",
+													"",
+													"pm.test(\"Status code is 200\", function () {",
+													" const statusCode = pm.response.code;",
+													"    pm.expect(statusCode).to.eql(200)});",
+													"",
+													"// Retrieve environment variables",
+													"const deviceSerialNumber = pm.environment.get(\"deviceSerialNumber\");",
+													"",
+													"// Extract the id and email from the response",
+													"var responseDeviceId = jsonData.id;",
+													"",
+													"// Set the id and email as environment variables",
+													"pm.environment.set(\"deviceID\", responseDeviceId);",
+													"",
+													"",
+													"pm.test(\"Verify 'serial_number' is deviceSerialNumber\", function () {",
+													"    pm.expect(jsonData).to.have.property(\"serial_number\"); // Check if 'last_seen' exists",
+													"    pm.expect(jsonData.serial_number.toString()).to.equal(deviceSerialNumber.toString()); // Verify 'last_seen' is null",
+													"});",
+													"",
+													"",
+													"pm.test(\"Verify 'last_seen' is null\", function () {",
+													"    pm.expect(jsonData).to.have.property(\"last_seen\"); // Check if 'last_seen' exists",
+													"    pm.expect(jsonData.last_seen).to.be.null; // Verify 'last_seen' is null",
+													"});"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"// Generate a random number between 1 and 999999999",
+													"const serialNumber = Math.floor(1 + Math.random() * 999999999);",
+													"",
+													"// Log the serial number for debugging",
+													"console.log(\"Generated Serial Number: \" + serialNumber);",
+													"",
+													"// Set the serial number as an environment variable",
+													"pm.environment.set(\"deviceSerialNumber\", serialNumber);",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											},
+											{
+												"key": "X-Org-Key",
+												"value": "{{TenantId}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"name\": \"{{deviceName}}\",\n  \"type\": \"{{deviceType}}\",\n  \"serial_number\": \"{{deviceSerialNumber}}\",\n  \"properties\": {\n\t\"IP\" :\"{{deviceIP}}\",\n\t\"LOCATION\":\"{{deviceLocation}}\"\n\t}\n}"
+										},
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/devices/",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"devices",
+												""
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"auth": {
+								"type": "noauth"
+							},
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Update Device",
+							"item": [
+								{
+									"name": "Updating Device IP",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													" const statusCode = pm.response.code;",
+													"    pm.expect(statusCode).to.eql(200)});",
+													"",
+													"// Retrieve environment variables",
+													"const deviceSerialNumber = pm.environment.get(\"deviceSerialNumber\");",
+													"",
+													"",
+													"pm.test(\"Verify 'serial_number' is deviceSerialNumber\", function () {",
+													"    const responseJson = pm.response.json(); // Parse response as JSON",
+													"    pm.expect(responseJson).to.have.property(\"serial_number\"); // Check if 'last_seen' exists",
+													"    pm.expect(responseJson.serial_number.toString()).to.equal(deviceSerialNumber.toString()); // Verify 'last_seen' is null",
+													"});",
+													"",
+													"",
+													"pm.test(\"Verify 'last_seen' is null\", function () {",
+													"    const responseJson = pm.response.json(); // Parse response as JSON",
+													"    pm.expect(responseJson).to.have.property(\"last_seen\"); // Check if 'last_seen' exists",
+													"    pm.expect(responseJson.last_seen).to.be.null; // Verify 'last_seen' is null",
+													"});",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											},
+											{
+												"key": "X-Org-Key",
+												"value": "{{TenantId}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"name\": \"{{deviceName}}\",\n  \"type\": \"{{deviceType}}\",\n  \"properties\": {\n\t\"IP\" :\"{{updatedDeviceIP}}\",\n\t\"LOCATION\":\"{{deviceLocation}}\"\n\t}\n}"
+										},
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/devices/{{deviceID}}",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"devices",
+												"{{deviceID}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Fetch a device in a Org after device update",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													" const statusCode = pm.response.code;",
+													"    pm.expect(statusCode).to.eql(200)});",
+													"",
+													"// Retrieve environment variables",
+													"const deviceID = pm.environment.get(\"deviceID\");",
+													"const updatedDeviceIP = pm.environment.get(\"updatedDeviceIP\");",
+													"",
+													"",
+													"pm.test(\"Verify 'id' is deviceID\", function () {",
+													"    const responseJson = pm.response.json(); // Parse response as JSON",
+													"    pm.expect(responseJson).to.have.property(\"id\"); // Check if 'last_seen' exists",
+													"    pm.expect(responseJson.id.toString()).to.equal(deviceID.toString()); // Verify 'last_seen' is null",
+													"});",
+													"",
+													"pm.test(\"Verify IP is 'updatedDeviceIP'\", function () {",
+													"    const responseJson = pm.response.json(); // Parse response as JSON",
+													"    pm.expect(responseJson).to.have.nested.property(\"properties.IP\", updatedDeviceIP); // Check IP value",
+													"});",
+													"",
+													"",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											},
+											{
+												"key": "X-Org-Key",
+												"value": "{{TenantId}}"
+											}
+										],
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/devices/{{deviceID}}",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"devices",
+												"{{deviceID}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create Second Device",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Define jsonData before using it in the test script",
+													"const jsonData = pm.response.json();",
+													"",
+													"pm.test(\"Status code is 200\", function () {",
+													" const statusCode = pm.response.code;",
+													"    pm.expect(statusCode).to.eql(200)});",
+													"",
+													"// Retrieve environment variables",
+													"const secondDeviceSerialNumber = pm.environment.get(\"secondDeviceSerialNumber\");",
+													"",
+													"// Extract the id and email from the response",
+													"var responseDeviceId = jsonData.id;",
+													"",
+													"",
+													"pm.test(\"Verify 'serial_number' is secondDeviceSerialNumber\", function () {",
+													"    pm.expect(jsonData).to.have.property(\"serial_number\"); // Check if 'last_seen' exists",
+													"    pm.expect(jsonData.serial_number.toString()).to.equal(secondDeviceSerialNumber.toString()); // Verify 'last_seen' is null",
+													"});",
+													"",
+													"",
+													"pm.test(\"Verify 'last_seen' is null\", function () {",
+													"    pm.expect(jsonData).to.have.property(\"last_seen\"); // Check if 'last_seen' exists",
+													"    pm.expect(jsonData.last_seen).to.be.null; // Verify 'last_seen' is null",
+													"});"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"// Generate a random number between 1 and 999999999",
+													"const serialNumber = Math.floor(1 + Math.random() * 999999999);",
+													"",
+													"// Log the serial number for debugging",
+													"console.log(\"Generated Serial Number: \" + serialNumber);",
+													"",
+													"// Set the serial number as an environment variable",
+													"pm.environment.set(\"secondDeviceSerialNumber\", serialNumber);",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											},
+											{
+												"key": "X-Org-Key",
+												"value": "{{TenantId}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"name\": \"{{secondDeviceName}}\",\n  \"type\": \"{{deviceType}}\",\n  \"serial_number\": \"{{secondDeviceSerialNumber}}\",\n  \"properties\": {\n\t\"IP\" :\"{{deviceIP}}\",\n\t\"LOCATION\":\"{{deviceLocation}}\"\n\t}\n}"
+										},
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/devices/",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"devices",
+												""
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Updating Device with existing device serial number",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 400\", function () {",
+													" const statusCode = pm.response.code;",
+													"    pm.expect(statusCode).to.eql(400) // Ensure the status code is 400 (bad request)",
+													"});",
+													"",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											},
+											{
+												"key": "X-Org-Key",
+												"value": "{{TenantId}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"name\": \"{{deviceName}}\",\n  \"type\": \"{{deviceType}}\",\n  \"serial_number\": \"{{secondDeviceSerialNumber}}\",\n  \"properties\": {\n\t\"IP\" :\"{{updatedDeviceIP}}\",\n\t\"LOCATION\":\"{{deviceLocation}}\"\n\t}\n}"
+										},
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/devices/{{deviceID}}",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"devices",
+												"{{deviceID}}"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"auth": {
+								"type": "bearer",
+								"bearer": [
+									{
+										"key": "token",
+										"value": "{{user_access_token}}",
+										"type": "string"
+									}
+								]
+							},
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Update Device Heartbeat",
+							"item": [
+								{
+									"name": "Update Heartbeat",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Define jsonData before using it in the test script",
+													"const jsonData = pm.response.json();",
+													"",
+													"// Verify status code is 200",
+													"pm.test(\"Status code is 200\", function () {",
+													" const statusCode = pm.response.code;",
+													"    pm.expect(statusCode).to.eql(200)});",
+													"",
+													"// Fetch and log 'created_at' field",
+													"pm.test(\"Fetch 'last_seen' field\", function () {",
+													"    pm.expect(jsonData).to.have.property(\"last_seen\"); // Check if 'created_at' exists",
+													"    console.log(\"last_seen:\", jsonData.last_seen); // Log 'created_at' value",
+													"});",
+													"",
+													"pm.environment.set(\"last_seen\", jsonData.last_seen);",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											},
+											{
+												"key": "X-Org-Key",
+												"value": "{{TenantId}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/devices/{{deviceID}}/heartbeat",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"devices",
+												"{{deviceID}}",
+												"heartbeat"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"auth": {
+								"type": "bearer",
+								"bearer": [
+									{
+										"key": "token",
+										"value": "{{user_access_token}}",
+										"type": "string"
+									}
+								]
+							},
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Fetch Device After heartbeat",
+							"item": [
+								{
+									"name": "Fetch a device to check status",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Define jsonData before using it in the test script",
+													"const jsonData = pm.response.json();",
+													"",
+													"pm.test(\"Status code is 200\", function () {",
+													" const statusCode = pm.response.code;",
+													"    pm.expect(statusCode).to.eql(200)});",
+													"",
+													"// Retrieve environment variables",
+													"const deviceID = pm.environment.get(\"deviceID\");",
+													"const lastseenAtEnv = pm.environment.get(\"last_seen\"); // Fetch 'created_at' from environment variable",
+													"",
+													"// Verify 'id' matches deviceID from environment variable",
+													"pm.test(\"Verify 'id' is deviceID\", function () {",
+													"    pm.expect(jsonData).to.have.property(\"id\");",
+													"    pm.expect(jsonData.id.toString()).to.equal(deviceID.toString());",
+													"});",
+													"",
+													"// Verify 'created_at' matches the value from the environment variable",
+													"pm.test(\"Verify 'last_seen' is correct\", function () {",
+													"    pm.expect(jsonData).to.have.property(\"last_seen\");",
+													"    pm.expect(jsonData.last_seen).to.equal(lastseenAtEnv);",
+													"});",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											},
+											{
+												"key": "X-Org-Key",
+												"value": "{{TenantId}}"
+											}
+										],
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/devices/{{deviceID}}",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"devices",
+												"{{deviceID}}"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"auth": {
+								"type": "bearer",
+								"bearer": [
+									{
+										"key": "token",
+										"value": "{{user_access_token}}",
+										"type": "string"
+									}
+								]
+							},
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Fetch Device and check status after 1 min where heartbeat call is not done",
+							"item": [
+								{
+									"name": "Fetch a device to check status after 1 min",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Define jsonData before using it in the test script",
+													"const jsonData = pm.response.json();",
+													"",
+													"pm.test(\"Status code is 200\", function () {",
+													" const statusCode = pm.response.code;",
+													"    pm.expect(statusCode).to.eql(200)});",
+													"",
+													"// Retrieve environment variables",
+													"const deviceID = pm.environment.get(\"deviceID\");",
+													"const lastseenAtEnv = pm.environment.get(\"last_seen\"); // Fetch 'created_at' from environment variable",
+													"",
+													"// Verify 'id' matches deviceID from environment variable",
+													"pm.test(\"Verify 'id' is deviceID\", function () {",
+													"    pm.expect(jsonData).to.have.property(\"id\");",
+													"    pm.expect(jsonData.id.toString()).to.equal(deviceID.toString());",
+													"});",
+													"",
+													"// Verify 'created_at' matches the value from the environment variable",
+													"pm.test(\"Verify 'last_seen' is correct\", function () {",
+													"    pm.expect(jsonData).to.have.property(\"last_seen\");",
+													"    pm.expect(jsonData.last_seen).to.equal(lastseenAtEnv);",
+													"});",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"console.log(\"Adding a delay of 60 seconds before sending the request...\");",
+													"",
+													"// Delay of 60 seconds (60000 milliseconds)",
+													"setTimeout(function() {",
+													"    console.log(\"Delay finished. Proceeding to send the request.\");",
+													"    // Any code you want to execute after the delay can go here",
+													"}, 60000);"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											},
+											{
+												"key": "X-Org-Key",
+												"value": "{{TenantId}}"
+											}
+										],
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/devices/{{deviceID}}",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"devices",
+												"{{deviceID}}"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"auth": {
+								"type": "bearer",
+								"bearer": [
+									{
+										"key": "token",
+										"value": "{{user_access_token}}",
+										"type": "string"
+									}
+								]
+							},
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "EndPoint-Config",
+					"item": [
+						{
+							"name": "Fetch and update end-point config details",
+							"item": [
+								{
+									"name": "Fetch end-point config details for a device",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Parse response body as JSON",
+													"const jsonData = pm.response.json();",
+													"",
+													"// Status Code Test",
+													"pm.test(\"Status code is 200\", function () {",
+													" const statusCode = pm.response.code;",
+													"    pm.expect(statusCode).to.eql(200)});",
+													"",
+													"// Retrieve environment variables",
+													"const deviceID = pm.environment.get(\"deviceID\");",
+													"",
+													"// Verify the 'id' matches 'deviceID'",
+													"pm.test(\"Verify 'id' is deviceID\", function () {",
+													"    pm.expect(jsonData).to.have.property(\"id\");",
+													"    pm.expect(jsonData.id.toString()).to.equal(deviceID.toString());",
+													"});",
+													"",
+													"// Verify 'Analysis', 'Decryptor', 'Bands', 'MonitorStatistics', 'Whitelist' are present",
+													"pm.test(\"Verify 'Analysis', 'Decryptor', 'Bands', 'MonitorStatistics', and 'Whitelist' arrays are present\", function () {",
+													"    pm.expect(jsonData.config).to.have.property(\"Analysis\");",
+													"    pm.expect(jsonData.config).to.have.property(\"Decryptor\");",
+													"    pm.expect(jsonData.config).to.have.property(\"Bands\");",
+													"    pm.expect(jsonData.config).to.have.property(\"MonitorStatistics\");",
+													"    pm.expect(jsonData.config).to.have.property(\"Whitelist\");",
+													"});",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											},
+											{
+												"key": "X-Org-Key",
+												"value": "{{TenantId}}"
+											}
+										],
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/endpoint-config/{{deviceID}}",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"endpoint-config",
+												"{{deviceID}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Update end-point config details for a device",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Parse response body as JSON",
+													"const jsonData = pm.response.json();",
+													"",
+													"// Status Code Test",
+													"pm.test(\"Status code is 200\", function () {",
+													" const statusCode = pm.response.code;",
+													"    pm.expect(statusCode).to.eql(200)});",
+													"",
+													"// Retrieve environment variables",
+													"const deviceID = pm.environment.get(\"deviceID\");",
+													"",
+													"// Verify the 'id' matches 'deviceID'",
+													"pm.test(\"Verify 'id' is deviceID\", function () {",
+													"    pm.expect(jsonData).to.have.property(\"id\");",
+													"    pm.expect(jsonData.id.toString()).to.equal(deviceID.toString());",
+													"});",
+													"",
+													"// Verify 'Analysis', 'Decryptor', 'Bands', 'MonitorStatistics', 'Whitelist' are present",
+													"pm.test(\"Verify 'Analysis', 'Decryptor', 'Bands', 'MonitorStatistics', and 'Whitelist' arrays are present\", function () {",
+													"    pm.expect(jsonData.config).to.have.property(\"Analysis\");",
+													"    pm.expect(jsonData.config).to.have.property(\"Decryptor\");",
+													"    pm.expect(jsonData.config).to.have.property(\"Bands\");",
+													"    pm.expect(jsonData.config).to.have.property(\"MonitorStatistics\");",
+													"    pm.expect(jsonData.config).to.have.property(\"Whitelist\");",
+													"});",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											},
+											{
+												"key": "X-Org-Key",
+												"value": "{{TenantId}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"name\": \"HP dash LP Config\",\n    \"type\": \"Laptop\",\n    \"config\": {\n        \"MemcryptLog\": {\n            \"post_ip\": \"localhost\",\n            \"port\": \"{{memcryptLog_port}}\",\n            \"local_log_location\": \"C:\\\\Windows\\\\Detect\\\\TempDEBUG=false\"\n        },\n        \"Analysis\": {\n            \"dir_to_analyse\": \"\",\n            \"key\": \"\",\n            \"nonce\": \"\",\n            \"ipaddress\": \"localhost\",\n            \"port\": \"8899\",\n            \"infected_file\": \"\",\n            \"dir_candidate_values\": \"\",\n            \"recovery_file\": \"C:\\\\Windows\\\\Detect\\\\Tempremote=true\",\n            \"parallel\": \"false\",\n            \"bulk\": \"false\"\n        },\n        \"Decryptor\": {\n            \"dir_candidate_values\": \"\",\n            \"infected_file\": \"\",\n            \"dir_candidates_folder\": \"\",\n            \"dir_ransomware_folder\": \"\",\n            \"dir_extracts_folder\": \"\",\n            \"decrypts_folder\": \"\",\n            \"recovery_file\": \"C:\\\\Windows\\\\Detect\\\\Tempsafeext_filename=C:\\\\Windows\\\\Detect\\\\SafeExt.csv\",\n            \"extensionvalidationfile\": \"C:\\\\Windows\\\\Detect\\fileidentifier.json\",\n            \"ransomwareparameterfile\": \"C:\\\\Windows\\\\Detect\\ransomware.json\",\n            \"time_limit\": \"1800\",\n            \"remote\": \"true\",\n            \"parallel\": \"auto\",\n            \"algorithms\": \"CHACHA20#256#NA,CHACHA8#256#NA,SALSA20#256#NA,AES#256#CBC,AES#256#CTR,AES#256#CFB\",\n            \"bulk\": \"false\"\n        },\n        \"Bands\": {\n            \"cpured\": \"90\",\n            \"cpuamber\": \"70\",\n            \"memred\": \"90\",\n            \"memamber\": \"70\",\n            \"diskred\": \"90\",\n            \"diskamber\": \"70\",\n            \"ioreadsred\": \"100\",\n            \"ioreadsamber\": \"20\",\n            \"iowritesred\": \"100\",\n            \"iowritesamber\": \"20\",\n            \"updatedeltared\": \"30\",\n            \"updatedeltaamber\": \"10\"\n        },\n        \"MonitorStatistics\": {\n            \"ipaddress\": \"localhost\",\n            \"port\": \"8888\",\n            \"refreshinterval\": \"10\"\n        },\n        \"Whitelist\": {\n            \"inspect_folder\": \"c:whitelist_path=C:\\\\Windows\\\\Detect\\\\hashwhitelist.csv\",\n            \"hashes_number\": \"\",\n            \"hash_size\": \"\",\n            \"buffer_size\": \"\",\n            \"remote\": \"true\",\n            \"append\": \"true\",\n            \"centralised\": \"true\",\n            \"ipaddress\": \"localhost\",\n            \"port\": \"8888\"\n        },\n        \"Extractor\": {\n            \"logswitch\": \"silent\",\n            \"security_switch\": \"off\",\n            \"extract_folder\": \"C:\\\\Windows\\\\Detect\\\\Temp\",\n            \"hash_filename\": \"C:\\\\Windows\\\\Detect\\\\hashwhitelist.csv\",\n            \"folder_filename\": \"C:\\\\Windows\\\\Detect\\folderwhitelist.enc\",\n            \"suspectext_filename\": \"C:\\\\Windows\\\\Detect\\\\SuspectExt.enc\",\n            \"safeext_filename\": \"C:\\\\Windows\\\\Detect\\\\SafeExt.enc\",\n            \"suspectext_killswitch\": \"on\"\n        }\n    }\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/endpoint-config/{{deviceID}}",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"endpoint-config",
+												"{{deviceID}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Verify whether updated end-point config details are been fetched",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Parse response body as JSON",
+													"const jsonData = pm.response.json();",
+													"",
+													"// Status Code Test",
+													"pm.test(\"Status code is 200\", function () {",
+													" const statusCode = pm.response.code;",
+													"    pm.expect(statusCode).to.eql(200)});",
+													"",
+													"// Retrieve environment variables",
+													"const deviceID = pm.environment.get(\"deviceID\");",
+													"const memcryptlogPort = pm.environment.get(\"memcryptLog_port\"); // Retrieve memcryptLog_port from environment",
+													"",
+													"// Verify the 'id' matches 'deviceID'",
+													"pm.test(\"Verify 'id' is deviceID\", function () {",
+													"    pm.expect(jsonData).to.have.property(\"id\");",
+													"    pm.expect(jsonData.id.toString()).to.equal(deviceID.toString());",
+													"});",
+													"",
+													"// Verify 'Analysis', 'Decryptor', 'Bands', 'MonitorStatistics', 'Whitelist' are present",
+													"pm.test(\"Verify 'Analysis', 'Decryptor', 'Bands', 'MonitorStatistics', and 'Whitelist' arrays are present\", function () {",
+													"    pm.expect(jsonData.config).to.have.property(\"Analysis\");",
+													"    pm.expect(jsonData.config).to.have.property(\"Decryptor\");",
+													"    pm.expect(jsonData.config).to.have.property(\"Bands\");",
+													"    pm.expect(jsonData.config).to.have.property(\"MonitorStatistics\");",
+													"    pm.expect(jsonData.config).to.have.property(\"Whitelist\");",
+													"});",
+													"",
+													"// Verify the port in MemcryptLog array",
+													"pm.test(\"Verify 'port' in MemcryptLog matches environment variable\", function () {",
+													"    pm.expect(jsonData.config).to.have.property(\"MemcryptLog\"); // Check if MemcryptLog exists",
+													"    pm.expect(jsonData.config.MemcryptLog).to.have.property(\"port\"); // Check if 'port' exists within MemcryptLog",
+													"    pm.expect(jsonData.config.MemcryptLog.port.toString()).to.equal(memcryptlogPort.toString()); // Compare the port with environment variable",
+													"});"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											},
+											{
+												"key": "X-Org-Key",
+												"value": "{{TenantId}}"
+											}
+										],
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/endpoint-config/{{deviceID}}",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"endpoint-config",
+												"{{deviceID}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Fetch end-point config details of all the devices in the org",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Parse response body as JSON",
+													"let jsonData;",
+													"try {",
+													"    jsonData = pm.response.json();",
+													"} catch (e) {",
+													"    console.error(\"Failed to parse JSON:\", e);",
+													"    pm.test(\"Response is valid JSON\", function () {",
+													"        pm.expect.fail(\"Response body is not valid JSON\");",
+													"    });",
+													"    return;  // Exit if JSON is invalid",
+													"}",
+													"",
+													"// Status Code Test",
+													"pm.test(\"Status code is 200\", function () {",
+													" const statusCode = pm.response.code;",
+													"    pm.expect(statusCode).to.eql(200)});",
+													"",
+													"// Retrieve environment variables",
+													"const deviceID = pm.environment.get(\"deviceID\");",
+													"console.log(\"Device ID from environment:\", deviceID);",
+													"",
+													"// Verify the presence of 'id' and compare it with 'deviceID'",
+													"pm.test(\"Verify 'id' is deviceID\", function () {",
+													"    let found = false;",
+													"    jsonData.forEach(function(item) {",
+													"        if (item.id.toString() === deviceID.toString()) {",
+													"            found = true;",
+													"        }",
+													"    });",
+													"    pm.expect(found).to.be.true;  // Test passes if 'id' is found matching deviceID",
+													"});",
+													"",
+													"// Verify the presence of 'Analysis', 'Decryptor', 'Bands', 'MonitorStatistics', and 'Whitelist' arrays in each config",
+													"jsonData.forEach(function(item, index) {",
+													"    pm.test(`Verify config sections in object #${index + 1}`, function () {",
+													"        pm.expect(item).to.have.property('config');",
+													"        const config = item.config;",
+													"",
+													"        // Check for presence of required properties in the config",
+													"        pm.expect(config).to.have.property(\"Analysis\");",
+													"        pm.expect(config).to.have.property(\"Decryptor\");",
+													"        pm.expect(config).to.have.property(\"Bands\");",
+													"        pm.expect(config).to.have.property(\"MonitorStatistics\");",
+													"        pm.expect(config).to.have.property(\"Whitelist\");",
+													"    });",
+													"});",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											},
+											{
+												"key": "X-Org-Key",
+												"value": "{{TenantId}}"
+											}
+										],
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/endpoint-config/",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"endpoint-config",
+												""
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Delete Device",
+							"item": [
+								{
+									"name": "Delete device",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Define jsonData before using it in the test script",
+													"const jsonData = pm.response.json();",
+													"",
+													"pm.test(\"Status code is 200\", function () {",
+													" const statusCode = pm.response.code;",
+													"    pm.expect(statusCode).to.eql(200)});",
+													"",
+													"// Retrieve environment variables",
+													"const deviceID = pm.environment.get(\"deviceID\");",
+													"",
+													"",
+													"pm.test(\"Verify Device Deleted successfully message\", function () {",
+													"    pm.expect(jsonData.status).to.include(\"success\");",
+													"    pm.expect(jsonData.message).to.include(\"Device Deleted successfully\");",
+													"});",
+													"",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "DELETE",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											},
+											{
+												"key": "X-Org-Key",
+												"value": "{{TenantId}}"
+											}
+										],
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/devices/{{deviceID}}",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"devices",
+												"{{deviceID}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Fetch a device after delete it",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"const jsonData = pm.response.json();",
+													"",
+													"pm.test(\"Status code is 404\", function () {",
+													" const statusCode = pm.response.code;",
+													"    pm.expect(statusCode).to.eql(404)});",
+													"",
+													"const deviceID = pm.environment.get(\"deviceID\");",
+													" ",
+													"pm.test(\"Verify  error details matches deviceID\", function () {",
+													"    pm.expect(jsonData).to.have.property(\"error\");",
+													"    pm.expect(jsonData).to.have.property(\"code\");",
+													"});",
+													" ",
+													" ",
+													"pm.test(\"Verify 'message' in error\", function () {",
+													"    pm.expect(jsonData).to.have.property(\"error\");",
+													"    pm.expect(jsonData.error).to.contain(\"Device not found with the given ID \" + deviceID );",
+													"});"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											},
+											{
+												"key": "X-Org-Key",
+												"value": "{{TenantId}}"
+											}
+										],
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/devices/{{deviceID}}",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"devices",
+												"{{deviceID}}"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Delete User and Organization after console flow",
+							"item": [
+								{
+									"name": "KeycloakAccessToken",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"let jsonData = pm.response.json();\r",
+													"\r",
+													"if (jsonData.access_token) {\r",
+													"    pm.environment.set(\"keycloak_access_token\", jsonData.access_token);\r",
+													"    console.log(\"Access token:\", jsonData.access_token);\r",
+													"} else {\r",
+													"    console.log(\"Error retrieving access token:\", jsonData);\r",
+													"}\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/x-www-form-urlencoded",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "client_id",
+													"value": "{{keycloak_clientId}}",
+													"type": "text"
+												},
+												{
+													"key": "client_secret",
+													"value": "{{keycloak_secret}}",
+													"type": "text"
+												},
+												{
+													"key": "grant_type",
+													"value": "client_credentials",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{keycloak_url}}/realms/{{realm}}/protocol/openid-connect/token",
+											"host": [
+												"{{keycloak_url}}"
+											],
+											"path": [
+												"realms",
+												"{{realm}}",
+												"protocol",
+												"openid-connect",
+												"token"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Delete User After console flow",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 204\", function () {\r",
+													" const statusCode = pm.response.code;\r",
+													"    pm.expect(statusCode).to.eql(204)})"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{keycloak_access_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "DELETE",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{keycloak_url}}/admin/realms/{{realm}}/users/{{AdminUserId}}",
+											"host": [
+												"{{keycloak_url}}"
+											],
+											"path": [
+												"admin",
+												"realms",
+												"{{realm}}",
+												"users",
+												"{{AdminUserId}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Delete Org after console flow",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 204\", function () {\r",
+													" const statusCode = pm.response.code;\r",
+													"    pm.expect(statusCode).to.eql(204)})"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{keycloak_access_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{keycloak_url}}/admin/realms/{{realm}}/organizations/{{TenantId}}",
+											"host": [
+												"{{keycloak_url}}"
+											],
+											"path": [
+												"admin",
+												"realms",
+												"{{realm}}",
+												"organizations",
+												"{{TenantId}}"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						}
+					],
+					"auth": {
+						"type": "bearer",
+						"bearer": [
+							{
+								"key": "token",
+								"value": "{{user_access_token}}",
+								"type": "string"
+							}
+						]
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "WhiteListing",
+					"item": [
+						{
+							"name": "Create and Approve User",
+							"item": [
+								{
+									"name": "Get Admin Access Token",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var jsonData = pm.response.json();\r",
+													"\r",
+													"var adminAccessToken=jsonData.access_token;\r",
+													"\r",
+													"pm.environment.set(\"admin_access_token\",adminAccessToken);"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/x-www-form-urlencoded",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "client_id",
+													"value": "{{client_id}}",
+													"type": "text"
+												},
+												{
+													"key": "grant_type",
+													"value": "password",
+													"type": "text"
+												},
+												{
+													"key": "username",
+													"value": "{{admin_username}}",
+													"type": "text"
+												},
+												{
+													"key": "password",
+													"value": "{{admin_password}}",
+													"type": "text"
+												},
+												{
+													"key": "scope ",
+													"value": "openid",
+													"type": "text",
+													"disabled": true
+												}
+											]
+										},
+										"url": {
+											"raw": "{{keycloak_url}}/realms/{{realm}}/protocol/openid-connect/token",
+											"host": [
+												"{{keycloak_url}}"
+											],
+											"path": [
+												"realms",
+												"{{realm}}",
+												"protocol",
+												"openid-connect",
+												"token"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create User with valid data in console flow",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Check that the status code is 201",
+													"pm.test(\"Status code is 201\", function () {",
+													" const statusCode = pm.response.code;",
+													"    pm.expect(statusCode).to.eql(201)});",
+													"",
+													"// Check that the body includes the string \"pending\"",
+													"pm.test(\"Body matches string 'pending'\", function () {",
+													"  pm.expect(pm.response.text()).to.include(\"pending\");",
+													"});",
+													"",
+													"// Parse the response JSON",
+													"var jsonData = pm.response.json();",
+													"",
+													"// Extract the id and email from the response",
+													"var responsetenantId = jsonData.tenant.id;",
+													"var responseadminuserid = jsonData.adminUser.id;",
+													"var responseadminusername = jsonData.adminUser.username;",
+													"var responseadminemail = jsonData.adminUser.email;",
+													"var responseadminfirstname = jsonData.adminUser.firstName;",
+													"var responseadminlastname = jsonData.adminUser.lastName;",
+													"var responseadminattributesstatus = jsonData.adminUser.attributes.status;",
+													"var responseadminverificationtoken = jsonData.adminUser.attributes.verificationToken;",
+													"",
+													"// Set the id and email as environment variables",
+													"pm.environment.set(\"TenantId\", responsetenantId);",
+													"pm.environment.set(\"AdminUserId\", responseadminuserid);",
+													"pm.environment.set(\"user_username\", responseadminusername);",
+													"pm.environment.set(\"Existingusername\", responseadminusername);",
+													"pm.environment.set(\"Existingemail\", responseadminemail);",
+													"pm.environment.set(\"ExistingfirstName\", responseadminfirstname);",
+													"pm.environment.set(\"ExistinglastName\", responseadminlastname);",
+													"pm.environment.set(\"AttributesStatus\", responseadminattributesstatus);",
+													"pm.environment.set(\"Existingverificationcode\", responseadminverificationtoken);",
+													"",
+													"pm.environment.set(\"user_refresh_token\", \"test\");",
+													"pm.environment.set(\"user_token_expiration\",0);",
+													"",
+													"",
+													"console.log(\"TenantId\",pm.environment.get(\"TenantId\"));",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"// Function to generate a random string of specified length",
+													"function generateRandomString(length) {",
+													"    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+													"    let result = '';",
+													"    for (let i = 0; i < length; i++) {",
+													"        result += chars.charAt(Math.floor(Math.random() * chars.length));",
+													"    }",
+													"    return result;",
+													"}",
+													" ",
+													"function generateProfessionalSuffix(length) {",
+													"    const suffixes = ['Tech', 'Soft', 'Corp', 'Dyn', 'Sys'];",
+													"    return suffixes[Math.floor(Math.random() * suffixes.length)] +",
+													"           generateRandomString(length - suffixes[0].length);",
+													"}",
+													"// Function to generate a random first name",
+													"function generateRandomFirstName() {",
+													"    const names = ['Alice', 'Bob', 'Charlie', 'David', 'Eve'];",
+													"    return names[Math.floor(Math.random() * names.length)];",
+													"}",
+													" ",
+													" ",
+													"// Function to generate a random company name",
+													"function generateRandomCompanyName() {",
+													"    const companies = ['abc', 'def', 'xyz'];",
+													"    return companies[Math.floor(Math.random() * companies.length)];",
+													"}",
+													" ",
+													"// Function to generate a GUID",
+													"function generateGuid() {",
+													"    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {",
+													"        const r = (Math.random() * 16) | 0,",
+													"            v = c === 'x' ? r : (r & 0x3) | 0x8;",
+													"        return v.toString(16);",
+													"    });",
+													"}",
+													" ",
+													"// Function to remove commas and spaces from a string",
+													"function sanitizeString(str) {",
+													"    return str.replace(/[\\s,]/g, ''); // Remove spaces and commas",
+													"}",
+													" ",
+													"let customOrgName = \"api-\" + generateProfessionalSuffix(6);;",
+													"console.log(customOrgName);",
+													" ",
+													"// Sanitize the customOrgName to remove commas and spaces",
+													"customOrgName = sanitizeString(customOrgName);",
+													" ",
+													"if (customOrgName.length > 55) {",
+													"    customOrgName = customOrgName.substring(0, 55);",
+													"}",
+													" ",
+													"// Set the generated customOrgName into the Postman environment",
+													"pm.environment.set(\"customOrgName\", customOrgName);",
+													" ",
+													"pm.environment.set(\"randomFirstName\", generateRandomFirstName());",
+													" ",
+													"pm.environment.set(\"randomLastName\", generateRandomFirstName());",
+													"// Generate a custom email in a valid format, ensuring it’s <= 75 characters",
+													"let customEmail = \"api-\"+pm.environment.get(\"randomFirstName\").toLowerCase() +",
+													"                  \".\" +",
+													"                  generateRandomString(5).toLowerCase() +",
+													"                  \"@\" +",
+													"                  generateRandomCompanyName() +",
+													"                  \".com\";",
+													" ",
+													"// Ensure email length does not exceed 75 characters",
+													"if (customEmail.length > 75) {",
+													"    customEmail = customEmail.substring(0, 75);",
+													"}",
+													" ",
+													"// Generate custom username, limited to 75 characters",
+													"let customUsername =customEmail;",
+													" ",
+													"// Set the generated values into Postman environment variables",
+													"pm.environment.set(\"customOrgName\", customOrgName);",
+													"pm.environment.set(\"customUsername\", customUsername);",
+													"pm.environment.set(\"customEmail\", customEmail);",
+													" ",
+													"// Log the generated values to the console for verification",
+													"console.log(\"Custom Org Name (<= 55 chars, no commas or spaces):\", customOrgName);",
+													"console.log(\"Custom Username (<= 75 chars):\", customUsername);",
+													"console.log(\"Custom Email (<= 75 chars, includes 'com'):\", customEmail);"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"orgName\": \"{{customOrgName}}\",\n    \"adminUser\": {\n        \"username\": \"{{customUsername}}\",\n        \"email\": \"{{customEmail}}\",\n        \"firstName\": \"{{randomFirstName}}\",\n        \"lastName\": \"{{randomLastName}}\",\n        \"password\": \"{{password}}\"\n    }\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{App_url}}/api/auth/signup",
+											"host": [
+												"{{App_url}}"
+											],
+											"path": [
+												"api",
+												"auth",
+												"signup"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Approve Created User in console flow",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													" const statusCode = pm.response.code;",
+													"    pm.expect(statusCode).to.eql(200)});",
+													"",
+													"// Check that the body includes the string \"pending\"",
+													"pm.test(\"Body matches string 'User approved successfully'\", function () {",
+													"  pm.expect(pm.response.text()).to.include(\"User approved successfully\");",
+													"});"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{App_url}}/api/users/{{AdminUserId}}/approve",
+											"host": [
+												"{{App_url}}"
+											],
+											"path": [
+												"api",
+												"users",
+												"{{AdminUserId}}",
+												"approve"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Get Access Token",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var jsonData = pm.response.json();\r",
+													"\r",
+													"var userAccessToken=jsonData.access_token;\r",
+													"\r",
+													"pm.environment.set(\"user_access_token\",userAccessToken);"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/x-www-form-urlencoded",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "client_id",
+													"value": "{{client_id}}",
+													"type": "text"
+												},
+												{
+													"key": "grant_type",
+													"value": "password",
+													"type": "text"
+												},
+												{
+													"key": "username",
+													"value": "{{user_username}}",
+													"type": "text"
+												},
+												{
+													"key": "password",
+													"value": "{{user_password}}",
+													"type": "text"
+												},
+												{
+													"key": "scope ",
+													"value": "openid",
+													"type": "text",
+													"disabled": true
+												}
+											]
+										},
+										"url": {
+											"raw": "{{keycloak_url}}/realms/{{realm}}/protocol/openid-connect/token",
+											"host": [
+												"{{keycloak_url}}"
+											],
+											"path": [
+												"realms",
+												"{{realm}}",
+												"protocol",
+												"openid-connect",
+												"token"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"auth": {
+								"type": "bearer",
+								"bearer": [
+									{
+										"key": "token",
+										"value": "{{admin_access_token}}",
+										"type": "string"
+									}
+								]
+							},
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Create Device",
+							"item": [
+								{
+									"name": "Create Device",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Define jsonData before using it in the test script",
+													"const jsonData = pm.response.json();",
+													"",
+													"pm.test(\"Status code is 200\", function () {",
+													" const statusCode = pm.response.code;",
+													"    pm.expect(statusCode).to.eql(200)});",
+													"",
+													"// Retrieve environment variables",
+													"const deviceSerialNumber = pm.environment.get(\"deviceSerialNumber\");",
+													"",
+													"// Extract the id and email from the response",
+													"var responseDeviceId = jsonData.id;",
+													"",
+													"// Set the id and email as environment variables",
+													"pm.environment.set(\"deviceID\", responseDeviceId);",
+													"",
+													"",
+													"pm.test(\"Verify 'serial_number' is deviceSerialNumber\", function () {",
+													"    pm.expect(jsonData).to.have.property(\"serial_number\"); // Check if 'last_seen' exists",
+													"    pm.expect(jsonData.serial_number.toString()).to.equal(deviceSerialNumber.toString()); // Verify 'last_seen' is null",
+													"});",
+													"",
+													"",
+													"pm.test(\"Verify 'last_seen' is null\", function () {",
+													"    pm.expect(jsonData).to.have.property(\"last_seen\"); // Check if 'last_seen' exists",
+													"    pm.expect(jsonData.last_seen).to.be.null; // Verify 'last_seen' is null",
+													"});"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"// Generate a random number between 1 and 999999999",
+													"const serialNumber = Math.floor(1 + Math.random() * 999999999);",
+													"",
+													"// Log the serial number for debugging",
+													"console.log(\"Generated Serial Number: \" + serialNumber);",
+													"",
+													"// Set the serial number as an environment variable",
+													"pm.environment.set(\"deviceSerialNumber\", serialNumber);",
+													"console.log(\"TenentId\"+pm.environment.get(\"TenantId\"));",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json"
+											},
+											{
+												"key": "X-Org-Key",
+												"value": "{{TenantId}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"name\": \"{{deviceName}}\",\n  \"type\": \"{{deviceType}}\",\n  \"serial_number\": \"{{deviceSerialNumber}}\",\n  \"properties\": {\n\t\"IP\" :\"{{deviceIP}}\",\n\t\"LOCATION\":\"{{deviceLocation}}\"\n\t}\n}"
+										},
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/devices/",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"devices",
+												""
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"auth": {
+								"type": "noauth"
+							},
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Add Application",
+							"item": [
+								{
+									"name": "Create Application",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"// Generate random name\r",
+													"const applicationName = `AppName-${Math.random().toString(36).substring(2, 8)}`;\r",
+													"\r",
+													"// Set the variable for the request body\r",
+													"pm.environment.set(\"applicationName\", applicationName);\r",
+													"\r",
+													"function generateRandomHash(length = 10) {\r",
+													"  return [...Array(length)]\r",
+													"    .map(() => Math.random().toString(36).substring(2, 3))\r",
+													"    .join('');\r",
+													"}\r",
+													"\r",
+													"const randomHash = generateRandomHash();\r",
+													"\r",
+													"// Set the generated hash as an environment variable\r",
+													"pm.environment.set(\"hash\", randomHash);\r",
+													"\r",
+													"// Log the generated random name\r",
+													"console.log(`Generated application Name: ${applicationName}`);\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"  pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"var jsonData = pm.response.json();\r",
+													"var responseapplicationid = jsonData.id;\r",
+													"var responseaplicatiomnname=jsonData.name;\r",
+													"pm.environment.set(\"ApplicationId\", responseapplicationid);\r",
+													"pm.environment.set(\"Applicationname\", responseaplicatiomnname);\r",
+													"\r",
+													"\r",
+													"\r",
+													"\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"name\": \"{{applicationName}}\",\r\n  \"version\": \"1.82.0\",\r\n  \"publisher\": \"Microsoft\",\r\n  \"hash\": \"{{hash}}\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/applications",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"applications"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"auth": {
+								"type": "bearer",
+								"bearer": [
+									{
+										"key": "token",
+										"value": "{{user_access_token}}",
+										"type": "string"
+									}
+								]
+							},
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Fetch Applications",
+							"item": [
+								{
+									"name": "Fetch all Applications in a Org",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"  pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"pm.test(\"Body matches  application name\", function () {\r",
+													"  pm.expect(pm.response.text()).to.include(pm.environment.get(\"applicationName\"));\r",
+													"});"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/applications?skip=0&limit=100",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"applications"
+											],
+											"query": [
+												{
+													"key": "skip",
+													"value": "0"
+												},
+												{
+													"key": "limit",
+													"value": "100"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Fetch inventory details before inventory is added",
+							"item": [
+								{
+									"name": "Fetch All inventory with in device when inventory not available",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 404\", function () {\r",
+													"  pm.response.to.have.status(404);\r",
+													"});\r",
+													"const responseJson = pm.response.json();\r",
+													"const deviceID=pm.environment.get('deviceID');\r",
+													"pm.test(\"Body contains string as no inventory found\",function(){\r",
+													"pm.expect(responseJson.error).to.include(`No inventory found for device with id ${deviceID}`);\r",
+													"});"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/devices/{{deviceID}}/inventory",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"devices",
+												"{{deviceID}}",
+												"inventory"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Create device Inventory",
+							"item": [
+								{
+									"name": "Create device inventory with valid data",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"  pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"// Parse the response body as JSON\r",
+													"let responseData = pm.response.json();\r",
+													"\r",
+													"// Access the 'id' field from the first object in the response\r",
+													"let inventoryId = responseData[0].id;\r",
+													"\r",
+													"// Store the 'id' in the environment variable 'inventory_id'\r",
+													"pm.environment.set(\"inventory_id\", inventoryId);\r",
+													"\r",
+													"// Log the stored inventory ID to the console (optional)\r",
+													"console.log(\"Inventory ID:\", inventoryId);\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJwUUFZYUpuXzFxNlVBanJWOEhSbkFaYWJyVmp4TkdrakhXYm55S0sycy1NIn0.eyJleHAiOjE3Mjc5NTY4MDcsImlhdCI6MTcyNzk1NjUwNywiYXV0aF90aW1lIjoxNzI3OTU1NjY5LCJqdGkiOiJjYWQwZDE1Mi00YmY4LTRjZDktOWY1MC1iODJiMGNjNzg1NWEiLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODEvcmVhbG1zL21lbWNyeXB0IiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjdkY2IyM2U3LTIzNDgtNDFmNS05MjBlLTgyZDA5Y2JjNWViZSIsInR5cCI6IkJlYXJlciIsImF6cCI6Im1lbWNyeXB0LWZyb250ZW5kIiwic2lkIjoiMmMyZDA1MTUtMmU4Yi00NDhjLTg0YzItMWU5ZDQzMzcxYTNiIiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyJodHRwczovL29hdXRoLnBzdG1uLmlvIiwiaHR0cDovL2xvY2FsaG9zdDozMDAwIiwiaHR0cDovL2xvY2FsaG9zdDo4MDAxIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJkZWZhdWx0LXJvbGVzLW1lbWNyeXB0Iiwib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiIsIk9SR19BRE1JTiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsIm9yZ19pZCI6IjEyNDBmMGY3LTE2ZDUtNDI4Ny05YWUwLWQ3Y2NjNDVmNWM1OSIsIm5hbWUiOiJNZWdnaWUgQWRhbXMiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJnb2VtYzY1OTAzNTM0LTEzZjMtNDlhZi1icTFnNTFhdmVyeXU3cCIsImdpdmVuX25hbWUiOiJNZWdnaWUiLCJmYW1pbHlfbmFtZSI6IkFkYW1zIiwiZW1haWwiOiJ5bXFhbHljaWFrc2oydmRjMzczM2RiLTY0OTgtNDNkZS04MzB6bnpjb21ub3ZhLmtlbW1lcjU5QGhvdG1haWwuY29tIn0.kRODgkino0SktkQL2kMFTpoMDAnZyLtFt69ob-AYyV5OE7crV-pZQ70588Ey4yo866AotZTsrqY7Crz4zMx9POo-o-2MUojDUh8mmacrgGiK6fe4PXsdhn6e4r7cVNKUfhUNzGP-6R_lqvq91NGfr1EY0P74n3jHuLPbVuB-r-8DOluNVEA4n4jDw2ZK5XVBNvjcvQf5YznfhGR2UFLqTlG_5i7KrY2Q75BMCSckBbOY-yOmE9izjImi1WxlYTSRxeoy6j-yeKjKNN1QnwT9B83JkY-KLhQG4r-OvsCXIHrk9FWkqylCJcNrG4Jg6xzhGFEjprW5we7vD9Fq98PdrA",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "X-Org-Key",
+												"value": "{{TenantId}}",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"items\": [\r\n    {\r\n      \"name\": \"{{applicationName}}\",\r\n      \"version\": \"1.82.0\",\r\n      \"publisher\": \"Microsoft\",\r\n      \"hash\": \"a1b2c3d4e5f6g7h8i9j0k\"\r\n    }\r\n  ]\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/devices/{{deviceID}}/inventory",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"devices",
+												"{{deviceID}}",
+												"inventory"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Fetch Inventory details after inventory is added",
+							"item": [
+								{
+									"name": "Fetch All inventory with in device",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"  pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"pm.test(\"Body should containg a string device id\",function(){\r",
+													"  pm.expect(pm.response.text()).to.include(pm.environment.get(\"deviceID\"));\r",
+													"})"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/devices/{{deviceID}}/inventory",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"devices",
+												"{{deviceID}}",
+												"inventory"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Fetch All agent inventory with in device",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"  pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"pm.test(\"Body should containg a string device id\",function(){\r",
+													"  pm.expect(pm.response.text()).to.include(pm.environment.get(\"deviceID\"));\r",
+													"})"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "X-Org-Key",
+												"value": "{{TenantId}}",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/devices/{{deviceID}}/agent-inventory",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"devices",
+												"{{deviceID}}",
+												"agent-inventory"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"auth": {
+								"type": "bearer",
+								"bearer": [
+									{
+										"key": "token",
+										"value": "{{user_access_token}}",
+										"type": "string"
+									}
+								]
+							},
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Approve Application",
+							"item": [
+								{
+									"name": "Approving a application",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"  pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"pm.test(\"Body should containg a string appication name\",function(){\r",
+													"  pm.expect(pm.response.text()).to.include(pm.environment.get(\"Applicationname\"));\r",
+													"})"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/applications/{{ApplicationId}}/approve",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"applications",
+												"{{ApplicationId}}",
+												"approve"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"auth": {
+								"type": "bearer",
+								"bearer": [
+									{
+										"key": "token",
+										"value": "{{user_access_token}}",
+										"type": "string"
+									}
+								]
+							},
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Fetch Application and inventory status when approved",
+							"item": [
+								{
+									"name": "Fetch Applications having Approved status",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"  pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"\r",
+													"// pm.test(\"Verify application id has status approved\", function () {\r",
+													"//   let jsonData = pm.response.json();\r",
+													"//     let targetId = pm.environment.get(\"ApplicationId\");\r",
+													"//     let found = jsonData.find(item => item.id === targetId);\r",
+													"//     pm.expect(found).to.be.an(\"object\");\r",
+													"//     pm.expect(found.status).to.eql(\"approved\");\r",
+													"// });"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/applications?skip=0&limit=100",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"applications"
+											],
+											"query": [
+												{
+													"key": "skip",
+													"value": "0"
+												},
+												{
+													"key": "limit",
+													"value": "100"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Fetch inventory with in device having Approved status",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"  pm.response.to.have.status(200);\r",
+													"\r",
+													"});\r",
+													"\r",
+													"\r",
+													"// pm.test(\"Verify application id has status approved\", function () {\r",
+													"//     var jsonData = pm.response.json();\r",
+													" \r",
+													"//     let targetId = pm.environment.get(\"ApplicationId\");\r",
+													"//     console.log(pm.environment.get(\"ApplicationId\"));\r",
+													"//     let found = jsonData.find(item => item.application.id === targetId);\r",
+													"//     pm.expect(found).to.be.an(\"object\");\r",
+													"//     console.log(found.status);\r",
+													"//     pm.expect(found.status).to.eql(\"approved\");\r",
+													"// });"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/devices/{{deviceID}}/inventory",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"devices",
+												"{{deviceID}}",
+												"inventory"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Delete Inventory",
+							"item": [
+								{
+									"name": "Delete Inventory using user access token",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													" const statusCode = pm.response.code;\r",
+													"    pm.expect(statusCode).to.eql(200)})"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{user_access_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "DELETE",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/inventory/{{inventory_id}}",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"inventory",
+												"{{inventory_id}}"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Reject Application",
+							"item": [
+								{
+									"name": "Create Application",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"// Generate random name\r",
+													"const applicationName = `AppName-${Math.random().toString(36).substring(2, 8)}`;\r",
+													"\r",
+													"// Set the variable for the request body\r",
+													"pm.environment.set(\"applicationName\", applicationName);\r",
+													"\r",
+													"function generateRandomHash(length = 10) {\r",
+													"  return [...Array(length)]\r",
+													"    .map(() => Math.random().toString(36).substring(2, 3))\r",
+													"    .join('');\r",
+													"}\r",
+													"\r",
+													"const randomHash = generateRandomHash();\r",
+													"\r",
+													"// Set the generated hash as an environment variable\r",
+													"pm.environment.set(\"hash\", randomHash);\r",
+													"\r",
+													"// Log the generated random name\r",
+													"console.log(`Generated application Name: ${applicationName}`);\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"  pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"var jsonData = pm.response.json();\r",
+													"var responseapplicationid = jsonData.id;\r",
+													"var responseaplicatiomnname=jsonData.name;\r",
+													"pm.environment.set(\"ApplicationId\", responseapplicationid);\r",
+													"pm.environment.set(\"Applicationname\", responseaplicatiomnname);\r",
+													"\r",
+													"\r",
+													"\r",
+													"\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											},
+											{
+												"key": "X-Org-Key",
+												"value": "{{TenantId}}",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n  \"name\": \"{{applicationName}}\",\r\n  \"version\": \"1.82.0\",\r\n  \"publisher\": \"Microsoft\",\r\n  \"hash\": \"{{hash}}\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/applications",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"applications"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Rejecting a application",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"  pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"pm.test(\"Body should containg a string appication name\",function(){\r",
+													"  pm.expect(pm.response.text()).to.include(pm.environment.get(\"Applicationname\"));\r",
+													"})"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/applications/{{ApplicationId}}/deny",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"applications",
+												"{{ApplicationId}}",
+												"deny"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"auth": {
+								"type": "bearer",
+								"bearer": [
+									{
+										"key": "token",
+										"value": "{{user_access_token}}",
+										"type": "string"
+									}
+								]
+							},
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Fetch Application and inventory status when Rejected",
+							"item": [
+								{
+									"name": "Fetch the Applications having Rejected status",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"  pm.response.to.have.status(200);\r",
+													"});\r",
+													" \r",
+													"pm.test(\"Verify application id has status rejected\", function () {\r",
+													"  let jsonData = pm.response.json();\r",
+													"  let targetId = pm.environment.get(\"ApplicationId\");\r",
+													" \r",
+													"  pm.expect(jsonData).to.be.an(\"array\");\r",
+													"  let found = jsonData.find(item => item.id === targetId);\r",
+													" \r",
+													"  pm.expect(found).to.be.an(\"object\").that.is.not.null;\r",
+													" \r",
+													"  console.log(found.status);\r",
+													"  pm.expect(found.status).to.eql(\"denied\");\r",
+													"});"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/applications?skip=0&limit=100",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"applications"
+											],
+											"query": [
+												{
+													"key": "skip",
+													"value": "0"
+												},
+												{
+													"key": "limit",
+													"value": "100"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Fetch inventory with in device having Rejected status",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 404\", function () {\r",
+													"  pm.response.to.have.status(404);\r",
+													"});\r",
+													" \r",
+													"const responseJson = pm.response.json();\r",
+													"const deviceID = pm.environment.get('deviceID');\r",
+													" \r",
+													"pm.test(\"Body contains string as no inventory found\", function () {\r",
+													"  pm.expect(responseJson.error).to.include(`No inventory found for device with id ${deviceID}`);\r",
+													"});"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/devices/{{deviceID}}/inventory",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"devices",
+												"{{deviceID}}",
+												"inventory"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Bulk Approve Applications",
+							"item": [
+								{
+									"name": "Create Application",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"// Generate random name\r",
+													"const applicationName = `AppName-${Math.random().toString(36).substring(2, 8)}`;\r",
+													"\r",
+													"// Set the variable for the request body\r",
+													"pm.environment.set(\"applicationName\", applicationName);\r",
+													"\r",
+													"function generateRandomHash(length = 10) {\r",
+													"  return [...Array(length)]\r",
+													"    .map(() => Math.random().toString(36).substring(2, 3))\r",
+													"    .join('');\r",
+													"}\r",
+													"\r",
+													"const randomHash = generateRandomHash();\r",
+													"\r",
+													"// Set the generated hash as an environment variable\r",
+													"pm.environment.set(\"hash\", randomHash);\r",
+													"\r",
+													"// Log the generated random name\r",
+													"console.log(`Generated application Name: ${applicationName}`);\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"  pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"var jsonData = pm.response.json();\r",
+													"var responseapplicationid = jsonData.id;\r",
+													"var responseaplicatiomnname=jsonData.name;\r",
+													"pm.environment.set(\"ApplicationId\", responseapplicationid);\r",
+													"pm.environment.set(\"Applicationname\", responseaplicatiomnname);\r",
+													"\r",
+													"\r",
+													"\r",
+													"\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": " {\r\n  \"name\": \"{{applicationName}}\",\r\n  \"version\": \"1.82.0\",\r\n  \"publisher\": \"Microsoft\",\r\n  \"hash\": \"{{hash}}\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/applications",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"applications"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create Second Application",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"\r",
+													"const secondApplicationName = `AppName-${Math.random().toString(36).substring(2, 8)}`;\r",
+													"\r",
+													"// Set the variable for the request body\r",
+													"function generateRandomHash(length = 10) {\r",
+													"  return [...Array(length)]\r",
+													"    .map(() => Math.random().toString(36).substring(2, 3))\r",
+													"    .join('');\r",
+													"}\r",
+													"\r",
+													"const randomHash = generateRandomHash();\r",
+													"\r",
+													"// Set the generated hash as an environment variable\r",
+													"pm.environment.set(\"hash\", randomHash);\r",
+													"\r",
+													"pm.environment.set(\"secondApplicationName\", secondApplicationName);\r",
+													"// Log the generated random name\r",
+													"console.log(`Generated application Name: ${secondApplicationName}`);\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"  pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"var jsonData = pm.response.json();\r",
+													"var responsesecondapplicationid = jsonData.id;\r",
+													"var responsesecondaplicatiomnname=jsonData.name;\r",
+													"pm.environment.set(\"secondApplicationId\", responsesecondapplicationid);\r",
+													"pm.environment.set(\"secondApplicationname\", responsesecondaplicatiomnname);\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": " {\r\n  \"name\": \"{{secondApplicationName}}\",\r\n  \"version\": \"1.82.0\",\r\n  \"publisher\": \"Microsoft\",\r\n  \"hash\": \"{{hash}}\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/applications",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"applications"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Approving bulk Applications",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"  pm.response.to.have.status(200);",
+													"});",
+													"",
+													"pm.test(\"Body should containg a string appication name\",function(){",
+													"  pm.expect(pm.response.text()).to.include(pm.environment.get(\"Applicationname\"));",
+													"})",
+													"",
+													"pm.test(\"Body should containg a string appication name\",function(){",
+													"  pm.expect(pm.response.text()).to.include(pm.environment.get(\"secondApplicationName\"));",
+													"})"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "accept",
+												"value": "application/json"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "[\n  \"{{ApplicationId}}\",\n  \"{{secondApplicationId}}\"\n]",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/applications/bulk-approve",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"applications",
+												"bulk-approve"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"auth": {
+								"type": "bearer",
+								"bearer": [
+									{
+										"key": "token",
+										"value": "{{user_access_token}}",
+										"type": "string"
+									}
+								]
+							},
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						},
+						{
+							"name": "Bulk Reject Applications",
+							"item": [
+								{
+									"name": "Create Application",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"// Generate random name\r",
+													"const applicationName = `AppName-${Math.random().toString(36).substring(2, 8)}`;\r",
+													"\r",
+													"// Set the variable for the request body\r",
+													"pm.environment.set(\"applicationName\", applicationName);\r",
+													"\r",
+													"function generateRandomHash(length = 10) {\r",
+													"  return [...Array(length)]\r",
+													"    .map(() => Math.random().toString(36).substring(2, 3))\r",
+													"    .join('');\r",
+													"}\r",
+													"\r",
+													"const randomHash = generateRandomHash();\r",
+													"\r",
+													"// Set the generated hash as an environment variable\r",
+													"pm.environment.set(\"hash\", randomHash);\r",
+													"// Log the generated random name\r",
+													"console.log(`Generated application Name: ${applicationName}`);\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"  pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"var jsonData = pm.response.json();\r",
+													"var responseapplicationid = jsonData.id;\r",
+													"var responseaplicatiomnname=jsonData.name;\r",
+													"pm.environment.set(\"ApplicationId\", responseapplicationid);\r",
+													"pm.environment.set(\"Applicationname\", responseaplicatiomnname);\r",
+													"\r",
+													"\r",
+													"\r",
+													"\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": " {\r\n  \"name\": \"{{applicationName}}\",\r\n  \"version\": \"1.82.0\",\r\n  \"publisher\": \"Microsoft\",\r\n  \"hash\": \"{{hash}}\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/applications",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"applications"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Create Second Application",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"\r",
+													"const secondApplicationName = `AppName-${Math.random().toString(36).substring(2, 8)}`;\r",
+													"\r",
+													"function generateRandomHash(length = 10) {\r",
+													"  return [...Array(length)]\r",
+													"    .map(() => Math.random().toString(36).substring(2, 3))\r",
+													"    .join('');\r",
+													"}\r",
+													"\r",
+													"const randomHash = generateRandomHash();\r",
+													"\r",
+													"// Set the generated hash as an environment variable\r",
+													"pm.environment.set(\"hash\", randomHash);\r",
+													"\r",
+													"pm.environment.set(\"secondApplicationName\", secondApplicationName);\r",
+													"// Log the generated random name\r",
+													"console.log(`Generated application Name: ${secondApplicationName}`);\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {\r",
+													"  pm.response.to.have.status(200);\r",
+													"});\r",
+													"\r",
+													"var jsonData = pm.response.json();\r",
+													"var responsesecondapplicationid = jsonData.id;\r",
+													"var responsesecondaplicatiomnname=jsonData.name;\r",
+													"pm.environment.set(\"secondApplicationId\", responsesecondapplicationid);\r",
+													"pm.environment.set(\"secondApplicationname\", responsesecondaplicatiomnname);\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											},
+											{
+												"key": "Accept",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": " {\r\n  \"name\": \"{{secondApplicationName}}\",\r\n  \"version\": \"1.82.0\",\r\n  \"publisher\": \"Microsoft\",\r\n  \"hash\": \"{{hash}}\"\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/applications",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"applications"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Rejecting bulk Applications",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"  pm.response.to.have.status(200);",
+													"});",
+													"",
+													"pm.test(\"Body should containg a string appication name\",function(){",
+													"  pm.expect(pm.response.text()).to.include(pm.environment.get(\"Applicationname\"));",
+													"})",
+													"",
+													"pm.test(\"Body should containg a string appication name\",function(){",
+													"  pm.expect(pm.response.text()).to.include(pm.environment.get(\"secondApplicationName\"));",
+													"})"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "accept",
+												"value": "application/json"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "[\n  \"{{ApplicationId}}\",\n  \"{{secondApplicationId}}\"\n]",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/applications/bulk-deny",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"applications",
+												"bulk-deny"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"auth": {
+								"type": "bearer",
+								"bearer": [
+									{
+										"key": "token",
+										"value": "{{user_access_token}}",
+										"type": "string"
+									}
+								]
+							},
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						}
+					],
+					"auth": {
+						"type": "bearer",
+						"bearer": [
+							{
+								"key": "token",
+								"value": "{{user_access_token}}",
+								"type": "string"
+							}
+						]
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Activity Logs",
+					"item": [
+						{
+							"name": "Creating Activity logs",
+							"item": [
+								{
+									"name": "Creating a Activity log record against the device",
+									"event": [
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"// Generate current date and time in ISO 8601 format",
+													"let currentTimestamp = new Date().toISOString();",
+													"",
+													"// Set this value in an environment variable",
+													"pm.environment.set(\"currentTimestamp\", currentTimestamp);",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"  pm.response.to.have.status(200);",
+													"});",
+													"",
+													"",
+													"",
+													"",
+													"",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "accept",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ1OElOME41S0syM3h3V2xxREk3T2hQVUVsYlViOWZIdFAxMTBpeU02NFg4In0.eyJleHAiOjE3MzAxOTgxNzEsImlhdCI6MTczMDE5Nzg3MSwianRpIjoiNzJkZjA0NzktZjAxOC00M2VkLTg5NWQtMmE0MjIyNDIwOTQzIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgxL3JlYWxtcy9tZW1jcnlwdCIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiI5ZjI5YzYzNi1lZmMyLTRiMWUtYTMwMC0xNzBkZGY0MmU1YzEiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJtZW1jcnlwdC1mcm9udGVuZCIsInNpZCI6IjZiNWU0ZmQ0LWQzNGUtNDY4Ny1iZTdlLWJlNWQ3Yjk1OWNiZSIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiaHR0cHM6Ly9vYXV0aC5wc3Rtbi5pbyIsImh0dHA6Ly9sb2NhbGhvc3Q6MzAwMCIsImh0dHA6Ly9sb2NhbGhvc3Q6ODAwMSJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsiZGVmYXVsdC1yb2xlcy1tZW1jcnlwdCIsIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iLCJPUkdfQURNSU4iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6InByb2ZpbGUgZW1haWwiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsIm9yZ19pZCI6IjJiNThjZWVjLTY5MzMtNGEyNC05ZTYwLWFlODIzMDk0MjUzZiIsIm5hbWUiOiJhcnVuIGt1bWFyIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiYXJ1bmt1bWFyQGRlbW9vcmc1NTU4LmNvbSIsImdpdmVuX25hbWUiOiJhcnVuIiwiZmFtaWx5X25hbWUiOiJrdW1hciIsImVtYWlsIjoiYXJ1bmt1bWFyQGRlbW9vcmc1NTU4LmNvbSJ9.LKCbJvdYgqzO0KgXoBbq2CsPXrWr-JvvteF67ymWD57mda26e0QL5vI8W0p38pLJUKeqjcHhfIWdeFEc6c66O_zJxRE96_ij4-tJkJ1booGoUVfsC6wwRpNnGExyNvDBLjBUVEmv9xExkToO-WMhsOsbbofW8q-oP03wiWf80lcXrFgJm4il7hhDXF0EuS3wy1_NqjzaQ0jE7Y5kOEl5Ta4SogjSVeVXSRsLpG-pz8y3ppj5ZTXx5rt7GGRd1GyaSrLR5uSccVqqGr19zUQbRx9gUIYZCzsMTtUQEYOAju5MB4tSa87uRU4Yfa9KCG2pgTNsqzra7ldqEzCM-Pwp2w",
+												"disabled": true
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "X-Org-Key",
+												"value": "{{TenantId}}",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "[{\n  \"device_id\": \"{{deviceID}}\",\n  \"activity_type\": \"RANSOMWARE_DETECTION_LEVEL1\",\n  \"severity\": \"Medium\",\n  \"details\": {\n    \"threat_name\": \"WannaCry_LEVEL1\",\n    \"affected_files\": [\n      \"C:/Users/Documents/important.doc\",\n      \"C:/Users/Desktop/critical.xlsx\"\n    ],\n    \"detection_method\": \"BEHAVIOR_ANALYSIS\",\n    \"action_taken\": \"QUARANTINE\",\n    \"timestamp\": \"{{currentTimestamp}}\"\n  }\n}\n]",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/activity-logs",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"activity-logs"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Fetching all Activity Logs",
+							"item": [
+								{
+									"name": "Fetch all the activity logs in the org",
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/activity-logs",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"activity-logs"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Fetch the activity logs based on device id",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"  pm.response.to.have.status(200);",
+													"});"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/activity-logs/device/{{deviceID}}",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"activity-logs",
+												"device",
+												"{{deviceID}}"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						}
+					],
+					"auth": {
+						"type": "bearer",
+						"bearer": [
+							{
+								"key": "token",
+								"value": "{{user_access_token}}",
+								"type": "string"
+							}
+						]
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "File Recovery Copy",
+					"item": [
+						{
+							"name": "Creating Recovery file records",
+							"item": [
+								{
+									"name": "Create a file  recovery record against the device",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"  pm.response.to.have.status(200);",
+													"});",
+													"",
+													"var jsonData = pm.response.json();",
+													"var responseRecoveryFileUniqueID = jsonData.id;",
+													"pm.environment.set(\"recoveryFileUniqueID\", responseRecoveryFileUniqueID);",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "accept",
+												"value": "application/json"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "X-Org-Key",
+												"value": "{{TenantId}}",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "[{\n  \"device_id\": \"{{deviceID}}\",\n  \"file_name\": \"test.exe\",\n  \"status\": \"Pending\",\n  \"recovery_method\": \"Shadow Copy\",\n  \"file_size\": 1024\n}]",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/file_recovery",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"file_recovery"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Verify the status Validation",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"// Check if the status code is 400 (or any expected status code)",
+													"pm.test(\"Status code is 400\", function () {",
+													"  pm.response.to.have.status(400);",
+													"});",
+													"",
+													"// Parse the response JSON",
+													"const responseJson = pm.response.json();",
+													"",
+													"// Verify that the 'message' element in 'details' is as expected",
+													"pm.test(\"Verify 'message' field in details array\", function () {",
+													"    pm.expect(responseJson).to.have.property(\"details\"); // Ensure 'details' property exists",
+													"    pm.expect(responseJson.details).to.be.an(\"array\").that.is.not.empty; // 'details' should be a non-empty array",
+													"    pm.expect(responseJson.details[0]).to.have.property(\"message\", \"Input should be 'In Progress', 'Completed', 'Failed', 'Queued' or 'Pending'\"); // Check 'message' field",
+													"});",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "accept",
+												"value": "application/json"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "X-Org-Key",
+												"value": "{{TenantId}}",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "[{\n  \"device_id\": \"{{deviceID}}\",\n  \"file_name\": \"test.exe\",\n  \"status\": \"Outstanding\",\n  \"recovery_method\": \"Shadow Copy\",\n  \"file_size\": 1024\n}]",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/file_recovery",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"file_recovery"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Update Recovery File Record",
+							"item": [
+								{
+									"name": "Update the recovery file record",
+									"request": {
+										"method": "PUT",
+										"header": [
+											{
+												"key": "accept",
+												"value": "application/json"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"status\": \"In Progress\",\n  \"recovery_method\": \"Shadow Copy\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/file-recovery/{{recoveryFileUniqueID}}",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"file-recovery",
+												"{{recoveryFileUniqueID}}"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Fetch Recovery File Records",
+							"item": [
+								{
+									"name": "Fetch all the recovery files in the organization",
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/organization/devices/recoveries",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"organization",
+												"devices",
+												"recoveries"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Fetch all the recovery files based on device id in the organization",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 200\", function () {",
+													"  pm.response.to.have.status(200);",
+													"});"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{consoleUrl}}/console/v1.0/device/{{deviceID}}/file_recovery",
+											"host": [
+												"{{consoleUrl}}"
+											],
+											"path": [
+												"console",
+												"v1.0",
+												"device",
+												"{{deviceID}}",
+												"file_recovery"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Delete User and Organization after file recovery",
+							"item": [
+								{
+									"name": "KeycloakAccessToken",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"let jsonData = pm.response.json();\r",
+													"\r",
+													"if (jsonData.access_token) {\r",
+													"    pm.environment.set(\"keycloak_access_token\", jsonData.access_token);\r",
+													"    console.log(\"Access token:\", jsonData.access_token);\r",
+													"} else {\r",
+													"    console.log(\"Error retrieving access token:\", jsonData);\r",
+													"}\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/x-www-form-urlencoded",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "urlencoded",
+											"urlencoded": [
+												{
+													"key": "client_id",
+													"value": "{{keycloak_clientId}}",
+													"type": "text"
+												},
+												{
+													"key": "client_secret",
+													"value": "{{keycloak_secert}}",
+													"type": "text"
+												},
+												{
+													"key": "grant_type",
+													"value": "client_credentials",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{keycloak_url}}/realms/{{realm}}/protocol/openid-connect/token",
+											"host": [
+												"{{keycloak_url}}"
+											],
+											"path": [
+												"realms",
+												"{{realm}}",
+												"protocol",
+												"openid-connect",
+												"token"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Delete User After Approval",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 204\", function () {\r",
+													" const statusCode = pm.response.code;\r",
+													"    pm.expect(statusCode).to.eql(204)})"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{keycloak_access_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "DELETE",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{keycloak_url}}/admin/realms/{{realm}}/users/{{AdminUserId}}",
+											"host": [
+												"{{keycloak_url}}"
+											],
+											"path": [
+												"admin",
+												"realms",
+												"{{realm}}",
+												"users",
+												"{{AdminUserId}}"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Delete Org after Approval",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"pm.test(\"Status code is 204\", function () {\r",
+													" const statusCode = pm.response.code;\r",
+													"    pm.expect(statusCode).to.eql(204)})"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{keycloak_access_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "DELETE",
+										"header": [],
+										"url": {
+											"raw": "{{keycloak_url}}/admin/realms/{{realm}}/organizations/{{TenantId}}",
+											"host": [
+												"{{keycloak_url}}"
+											],
+											"path": [
+												"admin",
+												"realms",
+												"{{realm}}",
+												"organizations",
+												"{{TenantId}}"
+											]
+										}
+									},
+									"response": []
+								}
+							],
+							"auth": {
+								"type": "noauth"
+							},
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"packages": {},
+										"exec": [
+											""
+										]
+									}
+								}
+							]
+						}
+					],
+					"auth": {
+						"type": "bearer",
+						"bearer": [
+							{
+								"key": "token",
+								"value": "{{user_access_token}}",
+								"type": "string"
+							}
+						]
+					},
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				}
+			],
+			"auth": {
+				"type": "noauth"
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		}
+	]
+}

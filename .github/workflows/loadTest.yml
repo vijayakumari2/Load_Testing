@@ -1,0 +1,30 @@
+name: Postman to K6 Conversion with Load Testing Configuration
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  postman-to-k6:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Postman-to-K6 Converter
+        run: npm install -g postman-to-k6
+
+      - name: Convert Postman Collection to K6 Script
+        run: |
+          postman-to-k6 ./postman/collection/Memcrypt_qa_performance.postman_collection.json -e ./postman/env/memcrypt_qa.postman_environment.json -o ./grafana/scripts/k6script.js
+
+      - name: Run K6 Load Test
+        run: |
+          docker-compose -f ./grafana/docker-compose.yml up -d

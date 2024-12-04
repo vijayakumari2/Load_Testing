@@ -23,7 +23,7 @@ jobs:
 
       - name: Convert Postman Collection to K6 Script
         run: |
-          postman-to-k6 ./postman/collection/Memcrypt_qa_performance.postman_collection.json -e ./postman/env/memcrypt_qa.postman_environment.json -o ./grafana/scripts/k6script.js
+          postman-to-k6 ./.postman/collection/Memcrypt_qa_performance.postman_collection.json -e ./.postman/env/memcrypt_qa.postman_environment.json -o ./grafana/scripts/k6script.js
 
       - name: Run K6 Load Test
         run: |

@@ -27,5 +27,6 @@ jobs:
 
       - name: Run K6 Load Test
         run: |
-          k6 run ./grafana/scripts/k6script.js
+          k6 --version
+          k6 run --vus 1 ./grafana/scripts/k6script.js
           # docker-compose -f ./grafana/docker-compose.yml up -d

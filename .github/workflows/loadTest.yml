@@ -21,12 +21,18 @@ jobs:
       - name: Install Postman-to-K6 Converter
         run: npm install -g postman-to-k6
 
+      - name: Install k6
+        run: |
+          choco install k6 -y
+          refreshenv
+
       - name: Convert Postman Collection to K6 Script
         run: |
           postman-to-k6 ./.postman/collection/Memcrypt_qa_performance.postman_collection.json -e ./.postman/env/memcrypt_qa.postman_environment.json -o ./grafana/scripts/k6script.js
 
       - name: Run K6 Load Test
         run: |
+          # docker run -i -v $(pwd):/scripts grafana/k6 run /scripts/grafana/scripts/k6script.js
           k6 --version
           k6 run --vus 1 ./grafana/scripts/k6script.js
           # docker-compose -f ./grafana/docker-compose.yml up -d

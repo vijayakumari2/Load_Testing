@@ -29,8 +29,7 @@ services:
   k6:
     image: grafana/k6
     container_name: k6
-    entrypoint: >
-      sh -c "ls -l /scripts && k6 run --out influxdb=http://influxdb:8086/k6 /scripts/k6script.js"
+    entrypoint: ["sh", "-c", "echo 'Listing /scripts/' && ls /scripts && k6 run --out influxdb=http://influxdb:8086/k6 /scripts/k6script.js"]
     depends_on:
       - influxdb
     volumes:

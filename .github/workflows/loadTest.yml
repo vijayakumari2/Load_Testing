@@ -68,6 +68,9 @@ jobs:
           name: k6script
           path: ./grafana/scripts
 
+      - name: List contents of /scripts to verify file mounting
+        run: ls -l ./grafana/scripts
+
       - name: Run K6 Load Test
         run: |
           docker-compose -f ./grafana/docker-compose.yml up -d

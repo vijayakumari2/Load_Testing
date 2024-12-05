@@ -29,11 +29,11 @@ services:
   k6:
     image: grafana/k6
     container_name: k6
-    entrypoint: ["sh", "-c", "echo 'Listing /scripts/' && ls /scripts && k6 run --out influxdb=http://influxdb:8086/k6 /scripts/k6script.js"]
+    entrypoint: ["sh", "-c", "echo 'Listing /scripts/' && ls -l /scripts && k6 run /scripts/k6script.js"]
     depends_on:
       - influxdb
     volumes:
-      - ./grafana/scripts:/scripts  # Mount local scripts directory to /scripts in container
+      - /absolute/path/to/grafana/scripts:/scripts  # Use absolute path here
 
 volumes:
   grafana-data:

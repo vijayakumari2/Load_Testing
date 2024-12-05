@@ -43,7 +43,6 @@ jobs:
           echo "Listing files in ./grafana/scripts:"
           ls -l ./grafana/scripts
 
-          
       - name: Install Docker
         run: |
           sudo apt-get update
@@ -68,9 +67,12 @@ jobs:
         run: |
           echo "Current directory of docker compose:"
           pwd
-          
+
       - name: Run K6 Load Test
         run: |
           docker-compose -f ./grafana/docker-compose.yml up -d
           docker-compose -f ./grafana/docker-compose.yml logs -f
-          # docker-compose down -v
+
+      - name: Shutdown Docker Compose
+        run: |
+          docker-compose -f ./grafana/docker-compose.yml down -v

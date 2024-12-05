@@ -28,11 +28,12 @@ jobs:
           curl -s https://dl.k6.io/key.gpg | sudo apt-key add -
           echo "deb https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
           sudo apt update
-          sudo apt install -y k6  
-          
+          sudo apt install -y k6
+
       - name: Convert Postman Collection to K6 Script
         run: |
           postman-to-k6 ./.postman/collection/Memcrypt_qa_performance.postman_collection.json -e ./.postman/env/memcrypt_qa.postman_environment.json -o ./grafana/scripts/k6script.js
+      
       - name: Install Docker and Docker Compose
         run: |
           sudo apt-get remove -y docker docker-engine docker.io containerd containerd.io
@@ -53,10 +54,9 @@ jobs:
           # Verify Docker and Docker Compose versions
           docker --version
           docker-compose --version
-          
+
       - name: Run K6 Load Test
         run: |
-          # docker run -i -v $(pwd):/scripts grafana/k6 run /scripts/grafana/scripts/k6script.js
-          # k6 --version
-          # k6 run --vus 1 ./grafana/scripts/k6script.js
           docker-compose -f ./grafana/docker-compose.yml up -d
+          docker-compose logs -f
+          docker-compose down -v

@@ -36,6 +36,14 @@ jobs:
             -e ./.postman/env/memcrypt_qa.postman_environment.json \
             -o ./grafana/scripts/k6script.js
 
+      - name: Print current directory
+        run: |
+          echo "Current directory of k6:"
+          pwd
+          echo "Listing files in ./grafana/scripts:"
+          ls -l ./grafana/scripts
+
+          
       - name: Install Docker
         run: |
           sudo apt-get update
@@ -56,6 +64,11 @@ jobs:
           sudo chmod +x /usr/local/bin/docker-compose
           docker-compose --version
 
+      - name: Print current directory
+        run: |
+          echo "Current directory of docker compose:"
+          pwd
+          
       - name: Run K6 Load Test
         run: |
           docker-compose -f ./grafana/docker-compose.yml up -d

@@ -30,28 +30,8 @@ jobs:
 
       - name: Add stages configuration to K6 script
         run: |
-
-      # Define the path to your script
-          SCRIPT_FILE="./grafana/scripts/k6script.js"
           sed -i "/export let options = {/r ./grafana/config/stages.js" ./grafana/scripts/k6script.js
-      # Use sed to insert the word 'option' after 'options' in postman[Symbol.for("initial")] method
-          sed -i 's/options,/options, option,/' ${SCRIPT_FILE}
-
-      # Optionally, check the file to confirm the changes
-        #  cat ${SCRIPT_FILE}
-
-        #   K6_SCRIPT_PATH="./grafana/scripts/k6script.js"
-        #   CONFIG_FILE_PATH="./grafana/config/stages.js"
-        #   sed -i "/export let options = {/a \ \nstages: $(cat${CONFIG_FILE_PATH})," ${K6_SCRIPT_PATH}
-
-
-          # sed -i "/export let options = {/a  ${CONFIG_FILE})," ${K6_SCRIPT}
-          # sed -i "/export let options = {/a \ \nstages: $STAGES," "$K6_SCRIPT_PATH"
-
-          # # sed -i "/^export let options = {/,/};/c $(cat ./grafana/config/stages.js)" ./grafana/scripts/k6script.js
-
-          # sed -i "/export let options = {/r ./grafana/config/stages.js" ./grafana/scripts/k6script.js
-          # sed -i "/stages:/!b;n;n;n;a maxRedirects: 4" ./grafana/scripts/k6script.js
+          sed -i 's/options,/options, option,/' ./grafana/scripts/k6script.js
           cat ./grafana/scripts/k6script.js
 
       - name: Set up Docker

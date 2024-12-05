@@ -35,7 +35,7 @@ jobs:
 
           SCRIPT_FILE="./grafana/scripts/k6script.js"
           CONFIG_FILE="./grafana/config/stages.js"
-          CONFIG_CONTENT=$(cat ${CONFIG_FILE})
+          CONFIG_CONTENT=$(cat ${CONFIG_FILE})| sed 's/[&/\]/\\&/g')
 
           sed -i "s/export let options = { maxRedirects: 4 };/export let options = ${CONFIG_CONTENT}/" ${SCRIPT_FILE}
 

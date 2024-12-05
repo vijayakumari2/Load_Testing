@@ -11,7 +11,8 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
       - grafana-data:/var/lib/grafana
- 
+      - ./path/to/grafana.ini:/etc/grafana/grafana.ini  # Optional custom config file mount
+  
   influxdb:
     image: influxdb:1.8
     container_name: influxdb
@@ -23,7 +24,7 @@ services:
       - INFLUXDB_ADMIN_PASSWORD=admin123
     volumes:
       - influxdb-data:/var/lib/influxdb
- 
+
   k6:
     image: grafana/k6
     container_name: k6
@@ -33,7 +34,7 @@ services:
       - influxdb
     volumes:
       - ./grafana:/scripts  # Mount local scripts directory to /scripts in container
- 
+
 volumes:
   grafana-data:
   influxdb-data:

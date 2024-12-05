@@ -74,9 +74,8 @@ jobs:
       - name: Run K6 Load Test
         run: |
           docker-compose -f ./grafana/docker-compose.yml up -d
-          docker-compose -f ./grafana/docker-compose.yml logs -f
-          docker exec $(docker ps -q --filter "ancestor=grafana/k6") ls -l /scripts
-
+          docker-compose -f ./grafana/docker-compose.yml logs -f k6
+          
       - name: Shutdown Docker Compose
         run: |
           docker-compose -f ./grafana/docker-compose.yml down -v

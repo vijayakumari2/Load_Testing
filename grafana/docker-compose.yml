@@ -33,7 +33,7 @@ services:
     depends_on:
       - influxdb
     volumes:
-      - ./grafana/scripts:/scripts 
+      - ./scripts:/scripts 
 
 volumes:
   grafana-data:

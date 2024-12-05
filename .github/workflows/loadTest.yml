@@ -28,7 +28,7 @@ jobs:
             -e ./.postman/env/memcrypt_qa.postman_environment.json \
             -o ./grafana/scripts/k6script.js
 
-      - name: Upload the k6 script as an artifact
+      - name: Upload the K6 script as an artifact
         uses: actions/upload-artifact@v3
         with:
           name: k6script
@@ -62,7 +62,7 @@ jobs:
           sudo chmod +x /usr/local/bin/docker-compose
           docker-compose --version
 
-      - name: Download the k6 script artifact
+      - name: Download the K6 script artifact
         uses: actions/download-artifact@v3
         with:
           name: k6script

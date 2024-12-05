@@ -30,7 +30,8 @@ jobs:
 
       - name: Add stages configuration to K6 script
         run: |
-          sed -i "/export let options = {/a \ \n$(cat ./grafana/config/stages.js)\n" ./grafana/scripts/k6script.js
+          sed -i "/export let options = {/a \ \n$(cat ./grafana/config/stages.js)," ./grafana/scripts/k6script.js
+          sed -i "/stages:/!b;n;n;n;a maxRedirects: 4" ./grafana/scripts/k6script.js
           cat ./grafana/scripts/k6script.js
 
       - name: Set up Docker

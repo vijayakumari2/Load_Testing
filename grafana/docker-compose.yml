@@ -5,7 +5,7 @@ services:
     image: grafana/grafana
     container_name: grafana
     ports:
-      - "3000:3000"  # Grafana UI
+      - "3000:3000"
     depends_on:
       - influxdb
     environment:
@@ -18,7 +18,7 @@ services:
     image: influxdb:1.8
     container_name: influxdb
     ports:
-      - "8086:8086"  # InfluxDB API
+      - "8086:8086"
     environment:
       - INFLUXDB_DB=k6
       - INFLUXDB_ADMIN_USER=admin

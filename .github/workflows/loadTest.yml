@@ -28,15 +28,24 @@ jobs:
           curl -s https://dl.k6.io/key.gpg | sudo apt-key add -
           echo "deb https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
           sudo apt update
-          sudo apt install -y k6
+          sudo apt install -y k6  
           
       - name: Convert Postman Collection to K6 Script
         run: |
           postman-to-k6 ./.postman/collection/Memcrypt_qa_performance.postman_collection.json -e ./.postman/env/memcrypt_qa.postman_environment.json -o ./grafana/scripts/k6script.js
 
+      - name: Update and Install Docker
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker.io
+          sudo systemctl start docker
+          sudo systemctl enable docker
+          
+      - name: Verify Docker Installation
+        run: docker --version  
       - name: Run K6 Load Test
         run: |
           # docker run -i -v $(pwd):/scripts grafana/k6 run /scripts/grafana/scripts/k6script.js
-          k6 --version
-          k6 run --vus 1 ./grafana/scripts/k6script.js
-          # docker-compose -f ./grafana/docker-compose.yml up -d
+          # k6 --version
+          # k6 run --vus 1 ./grafana/scripts/k6script.js
+          docker-compose -f ./grafana/docker-compose.yml up -d

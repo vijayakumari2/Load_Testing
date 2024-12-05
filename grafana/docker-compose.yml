@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   grafana:
     image: grafana/grafana
@@ -11,7 +13,6 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
       - grafana-data:/var/lib/grafana
-     
   
   influxdb:
     image: influxdb:1.8

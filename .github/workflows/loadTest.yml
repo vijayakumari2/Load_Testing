@@ -28,10 +28,6 @@ jobs:
             -e ./.postman/env/memcrypt_qa.postman_environment.json \
             -o ./grafana/scripts/k6script.js
 
-      - name: Check if k6 script exists
-        run: |
-          ls -l ./grafana/scripts/k6script.js
-
       - name: Upload the k6 script as an artifact
         uses: actions/upload-artifact@v3
         with:

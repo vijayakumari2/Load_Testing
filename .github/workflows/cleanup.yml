@@ -1,0 +1,107 @@
+name: main
+on:
+  workflow_dispatch:
+
+jobs:
+  cleanupRequest:
+    name: cleanupRequest
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: trstringer/manual-approval@v1
+        with:
+          secret: ${{ github.TOKEN }}
+          approvers: trstringer, acdunnigan
+      - name: cleanupRequest
+        run: echo "clean up requested successfully"
+
+  cleanUp:
+    name: Cleanup
+    runs-on: self-hosted
+    needs: deploy
+    environment: cleanup # Approval will be required for this environment
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: tests/e2e
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set default value
+        id: env_id
+        run: |
+          environment_id=${{ github.event.inputs.ENVIRONMENT_ID }}
+          echo "::set-output name=environment::${environment_id:-"qa"}"
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Install Required Packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            xserver-xorg-core \
+            xserver-xorg-video-vmware \
+            xvfb \
+            x11-xserver-utils \
+            maven
+
+      - name: Start Xvfb and Set DISPLAY
+        run: |
+          Xvfb :99 &              
+          sleep 3                 
+          export DISPLAY=:99      
+          echo "DISPLAY set to $DISPLAY" 
+          xhost +                 
+        env:
+          DISPLAY: ":99"
+
+      - name: Build & Install
+        run: mvn -B install -D skipTests --no-transfer-progress
+
+      - name: Ensure browsers are installed
+        run: mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install chrome"  
+
+      - name: Run E2E Tests
+        shell: bash
+        continue-on-error: true
+        run: |
+          echo "Running tests with DISPLAY=$DISPLAY"
+          ls
+          rm -rf reports
+          echo "Deleted reports folder"
+          mvn test -DsuiteXmlFile=cleanUpSuite.xml -Dplaywright.headless=true -Denv=${{ steps.env_id.outputs.environment }}
+        env:
+          DISPLAY: ":99" 
+
+      - name: Move reports
+        shell: bash
+        run: |
+          #!/bin/bash
+          SOURCE_DIR="./reports"   
+          DEST_DIR="./results"
+          mkdir $DEST_DIR
+          ls -td "$SOURCE_DIR"/*
+          LATEST_REPORT_DIR=$(ls -td "$SOURCE_DIR"/* | head -n 1)
+          echo "Latest folder found: $LATEST_REPORT_DIR"
+          if [ -z "$LATEST_REPORT_DIR" ]; then
+              echo "No report directory found."
+              exit 1
+          fi
+          echo "Moving reports from: $LATEST_REPORT_DIR"
+          mv "$LATEST_REPORT_DIR"/* "$DEST_DIR"/
+          mv "$DEST_DIR"/Index.html "$DEST_DIR"/index.html
+          rmdir "$LATEST_REPORT_DIR"
+          echo "Reports moved to: $DEST_DIR"
+
+      - name: Upload Test Results
+        if: always()
+        id: deployment
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: tests/e2e/results

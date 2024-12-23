@@ -2,8 +2,8 @@ name: Postman to K6 Conversion and Load Testing
 
 on:
   push:
-    branches:
-      - main
+    # branches:
+    #   # - main
 
 jobs:
   # Job to convert Postman collection to K6 script

@@ -29,6 +29,11 @@ jobs:
         with:
           node-version: 18
 
+      - name: Debug Inputs
+        run: |
+          echo "Input Duration: ${{ github.event.inputs.duration }}"
+          echo "Input Users: ${{ github.event.inputs.users }}"
+
       - name: Install Postman-to-K6 Converter
         run: npm install -g postman-to-k6
 

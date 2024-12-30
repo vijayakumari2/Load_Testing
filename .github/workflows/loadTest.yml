@@ -49,9 +49,9 @@ jobs:
       - name: Inject Dynamic Load Configuration
         run: |
           SCRIPT_FILE="./grafana/scripts/k6script.js"
-          DURATION="${{ inputs.duration }}"
-          USERS="${{ inputs.users }}"
-          sed -i "s/export let options = {.*};/export let options = { stages: [{ duration: '${DURATION}', target: ${USERS} }] };/g" ${SCRIPT_FILE}
+          DURATION="${{ github.event.inputs.duration }}"
+          USERS="${{ github.event.inputs.users }}"
+          sed -i "s/export let options = {.*};/export let options = { stages: [{ duration: '${DURATION}', target: '${USERS}' }] };/g" ${SCRIPT_FILE}
 
           # Add the dynamic configuration into the script
           # sed -i "1s/^/export let options = { stages: [{ duration: '${DURATION}', target: ${USERS} }] };\n/" ${SCRIPT_FILE}

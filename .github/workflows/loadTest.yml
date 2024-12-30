@@ -78,11 +78,12 @@ jobs:
 
       - name: List contents of /scripts to verify file mounting
         run: ls -l ./grafana/scripts
+             cat ./grafana/scripts/k6script.js
 
-      - name: Run K6 Load Test
-        run: |
-          docker-compose -f ./grafana/docker-compose.yml up -d
-          docker-compose -f ./grafana/docker-compose.yml logs -f k6
+      # - name: Run K6 Load Test
+      #   run: |
+      #     docker-compose -f ./grafana/docker-compose.yml up -d
+      #     docker-compose -f ./grafana/docker-compose.yml logs -f k6
           
       - name: Shutdown Docker Compose
         run: |
